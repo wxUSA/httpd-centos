@@ -87,7 +87,7 @@ Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 License: ASL 2.0
 Group: System Environment/Daemons
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: gcc, autoconf, pkgconfig, findutils, xmlto
+BuildRequires: gcc, autoconf, automake, pkgconfig, findutils, xmlto
 BuildRequires: perl-interpreter, perl-generators, systemd-devel
 BuildRequires: zlib-devel, libselinux-devel, lua-devel
 BuildRequires: apr-devel >= 1.5.0, apr-util-devel >= 1.5.0, pcre-devel >= 5.0
