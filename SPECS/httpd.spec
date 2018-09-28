@@ -280,6 +280,7 @@ xmlto man ./httpd.service.xml
 rm -rf srclib/{apr,apr-util,pcre}
 
 # regenerate configure scripts
+./buildconf --with-apr=apr-1-config
 autoheader && autoconf || exit 1
 
 # Before configure; fix location of build dir in generated apxs
