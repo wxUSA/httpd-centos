@@ -173,19 +173,6 @@ The mod_ssl module provides strong cryptography for the Apache Web
 server via the Secure Sockets Layer (SSL) and Transport Layer
 Security (TLS) protocols.
 
-%package -n mod_md
-Group: System Environment/Daemons
-Summary: Certificate provisioning using ACME for the Apache HTTP Server
-Requires: httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
-BuildRequires: jansson-devel, libcurl-devel
-
-%description -n mod_md
-This module manages common properties of domains for one or more
-virtual hosts. Specifically it can use the ACME protocol (RFC Draft)
-to automate certificate provisioning. These will be configured for
-managed domains and their virtual hosts automatically. This includes
-renewal of certificates before they expire.
-
 %package -n mod_proxy_html
 Group: System Environment/Daemons
 Summary: HTML and XML content filters for the Apache HTTP Server
@@ -226,7 +213,7 @@ interface for storing and accessing per-user session data.
 
 %patch19 -p1 -b .detectsystemd
 
-%patch21 -p1 -b .mddefault
+#%patch21 -p1 -b .mddefault
 %patch23 -p1 -b .export
 %patch24 -p1 -b .corelimit
 %patch25 -p1 -b .selinux
@@ -354,8 +341,7 @@ install -m 644 SOURCES/README.confmod \
     $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/README
 for f in 00-base.conf 00-mpm.conf 00-lua.conf 01-cgi.conf 00-dav.conf \
          00-proxy.conf 00-ssl.conf 01-ldap.conf 00-proxyhtml.conf \
-         01-ldap.conf 00-systemd.conf 01-session.conf 00-optional.conf \
-         01-md.conf; do
+         01-ldap.conf 00-systemd.conf 01-session.conf 00-optional.conf; do
   install -m 644 -p SOURCES/$f \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/$f
 done
@@ -614,7 +600,6 @@ exit $rv
 %exclude %{_sysconfdir}/httpd/conf.modules.d/00-proxyhtml.conf
 %exclude %{_sysconfdir}/httpd/conf.modules.d/01-ldap.conf
 %exclude %{_sysconfdir}/httpd/conf.modules.d/01-session.conf
-%exclude %{_sysconfdir}/httpd/conf.modules.d/01-md.conf
 
 %config(noreplace) %{_sysconfdir}/sysconfig/htcacheclean
 %ghost %{_sysconfdir}/sysconfig/httpd
@@ -634,7 +619,6 @@ exit $rv
 %{_libdir}/httpd/modules/mod*.so
 %exclude %{_libdir}/httpd/modules/mod_auth_form.so
 %exclude %{_libdir}/httpd/modules/mod_ssl.so
-%exclude %{_libdir}/httpd/modules/mod_md.so
 %exclude %{_libdir}/httpd/modules/mod_*ldap.so
 %exclude %{_libdir}/httpd/modules/mod_proxy_html.so
 %exclude %{_libdir}/httpd/modules/mod_xml2enc.so
@@ -714,10 +698,6 @@ exit $rv
 %{_libdir}/httpd/modules/mod_session*.so
 %{_libdir}/httpd/modules/mod_auth_form.so
 %config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-session.conf
-
-%files -n mod_md
-%{_libdir}/httpd/modules/mod_md.so
-%config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-md.conf
 
 %files devel
 %{_includedir}/httpd
