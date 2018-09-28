@@ -15,7 +15,7 @@ Name: httpd
 Version: 2.4.35
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
-Source0: https://github.com/wxUSA/httpd-centos/archive/master.tar.gz#/httpd-%{version}-%{release}.tar.gz
+Source0: https://github.com/wxUSA/httpd-centos/archive/2.4.x.tar.gz#/httpd-%{version}-%{release}.tar.gz
 #Source1: index.html
 #Source2: httpd.logrotate
 #Source3: instance.conf
@@ -55,30 +55,30 @@ Source0: https://github.com/wxUSA/httpd-centos/archive/master.tar.gz#/httpd-%{ve
 #Source43: httpd-ssl-gencerts
 #Source44: httpd@.service
 # build/scripts patches
-Patch1: SOURCES/httpd-2.4.1-apctl.patch
-Patch2: SOURCES/httpd-2.4.9-apxs.patch
-Patch3: SOURCES/httpd-2.4.1-deplibs.patch
-Patch6: SOURCES/httpd-2.4.3-apctl-systemd.patch
+Patch1: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.1-apctl.patch
+Patch2: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.9-apxs.patch
+Patch3: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.1-deplibs.patch
+Patch6: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.3-apctl-systemd.patch
 # Needed for socket activation and mod_systemd patch
-Patch19: SOURCES/httpd-2.4.25-detect-systemd.patch
+Patch19: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-detect-systemd.patch
 # Features/functional changes
-Patch21: SOURCES/httpd-2.4.33-mddefault.patch
-Patch23: SOURCES/httpd-2.4.33-export.patch
-Patch24: SOURCES/httpd-2.4.1-corelimit.patch
-Patch25: SOURCES/httpd-2.4.25-selinux.patch
+Patch21: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-mddefault.patch
+Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-export.patch
+Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.1-corelimit.patch
+Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-selinux.patch
 #Patch26: httpd-2.4.4-r1337344+.patch
-Patch27: SOURCES/httpd-2.4.2-icons.patch
-Patch29: SOURCES/httpd-2.4.33-systemd.patch
-Patch30: SOURCES/httpd-2.4.4-cachehardmax.patch
-Patch31: SOURCES/httpd-2.4.33-sslmultiproxy.patch
-Patch34: SOURCES/httpd-2.4.17-socket-activation.patch
-Patch35: SOURCES/httpd-2.4.33-sslciphdefault.patch
+Patch27: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.2-icons.patch
+Patch29: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-systemd.patch
+Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.4-cachehardmax.patch
+Patch31: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-sslmultiproxy.patch
+Patch34: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.17-socket-activation.patch
+Patch35: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-sslciphdefault.patch
 #Patch36: httpd-2.4.33-r1830819+.patch
 
 # Bug fixes
-Patch42: SOURCES/httpd-2.4.25-fallbackresource.patch
+Patch42: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-fallbackresource.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
-Patch58: SOURCES/httpd-2.4.34-r1738878.patch
+Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
 
 # Security fixes
 
