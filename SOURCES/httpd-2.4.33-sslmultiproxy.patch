@@ -1,0 +1,126 @@
+From ce2d1d7d4b2bebe34cf37fdeb30d35050092c5b5 Mon Sep 17 00:00:00 2001
+From: Rob Crittenden <rcrit@cow.greyoak.com>
+Date: Thu, 12 Apr 2018 14:36:28 -0400
+Subject: [PATCH] httpd-2.4.18-sslmultiproxy.patch
+
+---
+ modules/ssl/mod_ssl.c         | 24 ++++++++++++++++++++++--
+ modules/ssl/ssl_engine_vars.c | 18 +++++++++++++++++-
+ 2 files changed, 39 insertions(+), 3 deletions(-)
+
+diff --git a/modules/ssl/mod_ssl.c b/modules/ssl/mod_ssl.c
+index 48d64cb..42e85a3 100644
+diff -uap httpd-2.4.33/modules/ssl/mod_ssl.c.sslmultiproxy httpd-2.4.33/modules/ssl/mod_ssl.c
+--- httpd-2.4.33/modules/ssl/mod_ssl.c.sslmultiproxy
++++ httpd-2.4.33/modules/ssl/mod_ssl.c
+@@ -444,12 +444,19 @@
+     return OK;
+ }
+ 
++static APR_OPTIONAL_FN_TYPE(ssl_engine_disable) *othermod_engine_disable;
++static APR_OPTIONAL_FN_TYPE(ssl_engine_set) *othermod_engine_set;
++
+ static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
+                                            ap_conf_vector_t *per_dir_config)
+ {
+     SSLConnRec *sslconn = myConnConfig(c);
+     SSLSrvConfigRec *sc;
+ 
++    if (othermod_engine_disable) {
++        othermod_engine_disable(c);
++    }
++
+     if (sslconn) {
+         return sslconn;
+     }
+@@ -508,6 +515,10 @@
+ {
+     SSLConnRec *sslconn;
+     int status;
++
++    if (othermod_engine_set) {
++        return othermod_engine_set(c, per_dir_config, proxy, enable);
++    }
+     
+     if (proxy) {
+         sslconn = ssl_init_connection_ctx(c, per_dir_config);
+@@ -537,12 +548,18 @@
+ 
+ static int ssl_proxy_enable(conn_rec *c)
+ {
+-    return ssl_engine_set(c, NULL, 1, 1);
++    if (othermod_engine_set)
++        return othermod_engine_set(c, NULL, 1, 1);
++    else
++        return ssl_engine_set(c, NULL, 1, 1);
+ }
+ 
+ static int ssl_engine_disable(conn_rec *c)
+ {
+-    return ssl_engine_set(c, NULL, 0, 0);
++    if (othermod_engine_set)
++        return othermod_engine_set(c, NULL, 0, 0);
++    else
++        return ssl_engine_set(c, NULL, 0, 0);
+ }
+ 
+ int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
+@@ -730,6 +747,9 @@
+                       APR_HOOK_MIDDLE);
+ 
+     ssl_var_register(p);
++    
++    othermod_engine_disable = APR_RETRIEVE_OPTIONAL_FN(ssl_engine_disable);
++    othermod_engine_set = APR_RETRIEVE_OPTIONAL_FN(ssl_engine_set);
+ 
+     APR_REGISTER_OPTIONAL_FN(ssl_proxy_enable);
+     APR_REGISTER_OPTIONAL_FN(ssl_engine_disable);
+diff -uap httpd-2.4.33/modules/ssl/ssl_engine_vars.c.sslmultiproxy httpd-2.4.33/modules/ssl/ssl_engine_vars.c
+--- httpd-2.4.33/modules/ssl/ssl_engine_vars.c.sslmultiproxy
++++ httpd-2.4.33/modules/ssl/ssl_engine_vars.c
+@@ -54,6 +54,8 @@
+ static void  ssl_var_lookup_ssl_cipher_bits(SSL *ssl, int *usekeysize, int *algkeysize);
+ static char *ssl_var_lookup_ssl_version(apr_pool_t *p, char *var);
+ static char *ssl_var_lookup_ssl_compress_meth(SSL *ssl);
++static APR_OPTIONAL_FN_TYPE(ssl_is_https) *othermod_is_https;
++static APR_OPTIONAL_FN_TYPE(ssl_var_lookup) *othermod_var_lookup;
+ 
+ static SSLConnRec *ssl_get_effective_config(conn_rec *c)
+ {
+@@ -68,7 +70,9 @@
+ static int ssl_is_https(conn_rec *c)
+ {
+     SSLConnRec *sslconn = ssl_get_effective_config(c);
+-    return sslconn && sslconn->ssl;
++
++    return (sslconn && sslconn->ssl)
++        || (othermod_is_https && othermod_is_https(c));
+ }
+ 
+ static const char var_interface[] = "mod_ssl/" AP_SERVER_BASEREVISION;
+@@ -137,6 +141,9 @@
+ {
+     char *cp, *cp2;
+ 
++    othermod_is_https = APR_RETRIEVE_OPTIONAL_FN(ssl_is_https);
++    othermod_var_lookup = APR_RETRIEVE_OPTIONAL_FN(ssl_var_lookup);
++
+     APR_REGISTER_OPTIONAL_FN(ssl_is_https);
+     APR_REGISTER_OPTIONAL_FN(ssl_var_lookup);
+     APR_REGISTER_OPTIONAL_FN(ssl_ext_list);
+@@ -271,6 +278,15 @@
+      */
+     if (result == NULL && c != NULL) {
+         SSLConnRec *sslconn = ssl_get_effective_config(c);
++
++        if (strlen(var) > 4 && strcEQn(var, "SSL_", 4)
++            && (!sslconn || !sslconn->ssl) && othermod_var_lookup) {
++            /* For an SSL_* variable, if mod_ssl is not enabled for
++             * this connection and another SSL module is present, pass
++             * through to that module. */
++            return othermod_var_lookup(p, s, c, r, var);
++        }
++
+         if (strlen(var) > 4 && strcEQn(var, "SSL_", 4)
+             && sslconn && sslconn->ssl)
+             result = ssl_var_lookup_ssl(p, sslconn, r, var+4);
