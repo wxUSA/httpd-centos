@@ -1,3 +1,5 @@
+%define gitrepo httpd-centos
+%define gitbranch 2.4.x
 %define contentdir %{_datadir}/httpd
 %define docroot /var/www
 %define suexec_caller apache
@@ -15,7 +17,7 @@ Name: httpd
 Version: 2.4.35
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
-Source0: https://github.com/wxUSA/httpd-centos/archive/2.4.x.tar.gz#/httpd-%{version}-%{release}.tar.gz
+Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/httpd-%{version}-%{release}.tar.gz
 #Source1: index.html
 #Source2: httpd.logrotate
 #Source3: instance.conf
@@ -216,7 +218,7 @@ The mod_session module and associated backends provide an abstract
 interface for storing and accessing per-user session data.
 
 %prep
-%setup -q
+%setup -n %{gitrepo}-%{gitbranch} -q
 %patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
