@@ -249,15 +249,15 @@ sed -i '/^#define PLATFORM/s/Unix/%{vstring}/' os/unix/os.h
 sed -i '/suexec/s,setcap ,echo Skipping setcap for ,' Makefile.in
 
 # Example conf for instances
-cp $RPM_SOURCE_DIR/SOURCES/instance.conf .
-sed < $RPM_SOURCE_DIR/SOURCES/httpd.conf >> instance.conf '
+cp SOURCES/instance.conf .
+sed < SOURCES/httpd.conf >> instance.conf '
 0,/^ServerRoot/d;
 /# Supplemental configuration/,$d
 /^ *CustomLog .logs/s,logs/,logs/${HTTPD_INSTANCE}_,
 /^ *ErrorLog .logs/s,logs/,logs/${HTTPD_INSTANCE}_,
 '
-touch -r $RPM_SOURCE_DIR/SOURCES/instance.conf instance.conf
-cp -p $RPM_SOURCE_DIR/SOURCES/server-status.conf server-status.conf
+touch -r SOURCES/instance.conf instance.conf
+cp -p SOURCES/server-status.conf server-status.conf
 
 # Safety check: prevent build if defined MMN does not equal upstream MMN.
 vmmn=`echo MODULE_MAGIC_NUMBER_MAJOR | cpp -include include/ap_mmn.h | sed -n '/^2/p'`
@@ -267,7 +267,7 @@ if test "x${vmmn}" != "x%{mmn}"; then
    exit 1
 fi
 
-sed 's/@MPM@/%{mpm}/' < $RPM_SOURCE_DIR/SOURCES/httpd.service.xml \
+sed 's/@MPM@/%{mpm}/' < SOURCES/httpd.service.xml \
     > httpd.service.xml
 
 xmlto man ./httpd.service.xml
@@ -340,28 +340,28 @@ make DESTDIR=$RPM_BUILD_ROOT install
 mkdir -p $RPM_BUILD_ROOT%{_unitdir}
 for s in httpd.service htcacheclean.service httpd.socket \
          httpd@.service httpd-init.service; do
-  install -p -m 644 $RPM_SOURCE_DIR/SOURCES/${s} \
+  install -p -m 644 SOURCES/${s} \
                     $RPM_BUILD_ROOT%{_unitdir}/${s}
 done
 
 # install conf file/directory
 mkdir $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d \
       $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d
-install -m 644 $RPM_SOURCE_DIR/SOURCES/README.confd \
+install -m 644 SOURCES/README.confd \
     $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/README
-install -m 644 $RPM_SOURCE_DIR/SOURCES/README.confmod \
+install -m 644 SOURCES/README.confmod \
     $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/README
 for f in 00-base.conf 00-mpm.conf 00-lua.conf 01-cgi.conf 00-dav.conf \
          00-proxy.conf 00-ssl.conf 01-ldap.conf 00-proxyhtml.conf \
          01-ldap.conf 00-systemd.conf 01-session.conf 00-optional.conf \
          01-md.conf; do
-  install -m 644 -p $RPM_SOURCE_DIR/SOURCES/$f \
+  install -m 644 -p SOURCES/$f \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/$f
 done
 
 sed -i '/^#LoadModule mpm_%{mpm}_module /s/^#//' \
      $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/00-mpm.conf
-touch -r $RPM_SOURCE_DIR/SOURCES/00-mpm.conf \
+touch -r SOURCES/00-mpm.conf \
      $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/00-mpm.conf
 
 # install systemd override drop directory
@@ -370,11 +370,11 @@ touch -r $RPM_SOURCE_DIR/SOURCES/00-mpm.conf \
 mkdir $RPM_BUILD_ROOT%{_unitdir}/httpd.service.d
 mkdir $RPM_BUILD_ROOT%{_unitdir}/httpd.socket.d
 
-install -m 644 -p $RPM_SOURCE_DIR/SOURCES/10-listen443.conf \
+install -m 644 -p SOURCES/10-listen443.conf \
       $RPM_BUILD_ROOT%{_unitdir}/httpd.socket.d/10-listen443.conf
 
 for f in welcome.conf ssl.conf manual.conf userdir.conf; do
-  install -m 644 -p $RPM_SOURCE_DIR/SOURCES/$f \
+  install -m 644 -p SOURCES/$f \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/$f
 done
 
@@ -388,16 +388,16 @@ done
 rm -v docs/conf/extra/httpd-{ssl,userdir}.conf
 
 rm $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf/*.conf
-install -m 644 -p $RPM_SOURCE_DIR/SOURCES/httpd.conf \
+install -m 644 -p SOURCES/httpd.conf \
    $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf/httpd.conf
 
 mkdir $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
-install -m 644 -p $RPM_SOURCE_DIR/SOURCES/htcacheclean.sysconf \
+install -m 644 -p SOURCES/htcacheclean.sysconf \
    $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/htcacheclean
 
 # tmpfiles.d configuration
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib/tmpfiles.d 
-install -m 644 -p $RPM_SOURCE_DIR/SOURCES/httpd.tmpfiles \
+install -m 644 -p SOURCES/httpd.tmpfiles \
    $RPM_BUILD_ROOT%{_prefix}/lib/tmpfiles.d/httpd.conf
 
 # Other directories
@@ -434,7 +434,7 @@ EOF
 # Handle contentdir
 mkdir $RPM_BUILD_ROOT%{contentdir}/noindex \
       $RPM_BUILD_ROOT%{contentdir}/server-status
-install -m 644 -p $RPM_SOURCE_DIR/SOURCES/index.html \
+install -m 644 -p SOURCES/index.html \
         $RPM_BUILD_ROOT%{contentdir}/noindex/index.html
 install -m 644 -p docs/server-status/* \
         $RPM_BUILD_ROOT%{contentdir}/server-status
@@ -471,23 +471,23 @@ ln -s ../..%{_libdir}/httpd/modules $RPM_BUILD_ROOT/etc/httpd/modules
 
 # install http-ssl-pass-dialog
 mkdir -p $RPM_BUILD_ROOT%{_libexecdir}
-install -m755 $RPM_SOURCE_DIR/SOURCES/httpd-ssl-pass-dialog \
+install -m755 SOURCES/httpd-ssl-pass-dialog \
 	$RPM_BUILD_ROOT%{_libexecdir}/httpd-ssl-pass-dialog
 
 # install http-ssl-gencerts
-install -m755 $RPM_SOURCE_DIR/SOURCES/httpd-ssl-gencerts \
+install -m755 SOURCES/httpd-ssl-gencerts \
 	$RPM_BUILD_ROOT%{_libexecdir}/httpd-ssl-gencerts
 
 # Install action scripts
 mkdir -p $RPM_BUILD_ROOT%{_libexecdir}/initscripts/legacy-actions/httpd
 for f in graceful configtest; do
-    install -p -m 755 $RPM_SOURCE_DIR/SOURCES/action-${f}.sh \
+    install -p -m 755 SOURCES/action-${f}.sh \
             $RPM_BUILD_ROOT%{_libexecdir}/initscripts/legacy-actions/httpd/${f}
 done
 
 # Install logrotate config
 mkdir -p $RPM_BUILD_ROOT/etc/logrotate.d
-install -m 644 -p $RPM_SOURCE_DIR/SOURCES/httpd.logrotate \
+install -m 644 -p SOURCES/httpd.logrotate \
 	$RPM_BUILD_ROOT/etc/logrotate.d/httpd
 
 # Install systemd service man pages
