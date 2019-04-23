@@ -1,6 +1,7 @@
 [Unit]
-Description=Disk Cache Cleaning Daemon for Apache HTTP Server
+Description=Disk Cache Cleaning Daemon for the Apache HTTP Server
 After=httpd.service
+Documentation=man:htcacheclean.service(8)
 
 [Service]
 Type=forking
