@@ -14,8 +14,8 @@
 
 Summary: Apache HTTP Server
 Name: httpd
-Version: 2.4.35
-Release: 2%{?dist}
+Version: 2.4.39
+Release: 1%{?dist}
 URL: https://httpd.apache.org/
 Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/httpd-%{version}-%{release}.tar.gz
 #Source1: index.html
@@ -64,7 +64,7 @@ Patch6: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd
 # Needed for socket activation and mod_systemd patch
 Patch19: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-detect-systemd.patch
 # Features/functional changes
-Patch21: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-mddefault.patch
+Patch21: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.37-r1842929+.patch
 Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-export.patch
 Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.1-corelimit.patch
 Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-selinux.patch
@@ -78,7 +78,7 @@ Patch35: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 #Patch36: httpd-2.4.33-r1830819+.patch
 
 # Bug fixes
-Patch42: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-fallbackresource.patch
+# Patch42: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-fallbackresource.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
 Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
 
@@ -214,7 +214,7 @@ interface for storing and accessing per-user session data.
 
 %patch19 -p1 -b .detectsystemd
 
-#%patch21 -p1 -b .mddefault
+%patch21 -p1 -b .r1842929+
 %patch23 -p1 -b .export
 %patch24 -p1 -b .corelimit
 %patch25 -p1 -b .selinux
@@ -227,7 +227,7 @@ interface for storing and accessing per-user session data.
 %patch35 -p1 -b .sslciphdefault
 #%patch36 -p1 -b .r1830819+
 
-%patch42 -p1 -b .fallbackresource
+#%patch42 -p1 -b .fallbackresource
 %patch58 -p1 -b .r1738878
 
 # Patch in the vendor string
@@ -255,10 +255,16 @@ if test "x${vmmn}" != "x%{mmn}"; then
    exit 1
 fi
 
-sed 's/@MPM@/%{mpm}/' < SOURCES/httpd.service.xml \
-    > httpd.service.xml
+sed '
+s,@MPM@,%{mpm},g
+s,@DOCROOT@,%{docroot},g
+s,@LOGDIR@,%{_localstatedir}/log/httpd,g
+' < $RPM_SOURCE_DIR/httpd.conf.xml \
+    > httpd.conf.xml
 
-xmlto man ./httpd.service.xml
+xmlto man ./httpd.conf.xml
+xmlto man $RPM_SOURCE_DIR/htcacheclean.service.xml
+xmlto man $RPM_SOURCE_DIR/httpd.service.xml
 
 : Building with MMN %{mmn}, MMN-ISA %{mmnisa}
 : Default MPM is %{mpm}, vendor string is '%{vstring}'
@@ -390,7 +396,7 @@ install -m 644 -p SOURCES/httpd.tmpfiles \
 
 # Other directories
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/dav \
-         $RPM_BUILD_ROOT%{_localstatedir}/lib/httpd \
+         $RPM_BUILD_ROOT%{_localstatedir}/lib/httpd/state \
          $RPM_BUILD_ROOT/run/httpd/htcacheclean
 
 # Substitute in defaults which are usually done (badly) by "make install"
@@ -452,6 +458,7 @@ ln -s ../../pixmaps/poweredby.png \
         $RPM_BUILD_ROOT%{contentdir}/icons/poweredby.png
 
 # symlinks for /etc/httpd
+rmdir $RPM_BUILD_ROOT/etc/httpd/{state,run}
 ln -s ../..%{_localstatedir}/log/httpd $RPM_BUILD_ROOT/etc/httpd/logs
 ln -s ../..%{_localstatedir}/lib/httpd $RPM_BUILD_ROOT/etc/httpd/state
 ln -s /run/httpd $RPM_BUILD_ROOT/etc/httpd/run
@@ -478,10 +485,13 @@ mkdir -p $RPM_BUILD_ROOT/etc/logrotate.d
 install -m 644 -p SOURCES/httpd.logrotate \
 	$RPM_BUILD_ROOT/etc/logrotate.d/httpd
 
-# Install systemd service man pages
+# Install man pages
+install -d $RPM_BUILD_ROOT%{_mandir}/man8 $RPM_BUILD_ROOT%{_mandir}/man5
 install -m 644 -p httpd.service.8 httpd-init.service.8 httpd.socket.8 \
-        httpd@.service.8 \
+        httpd@.service.8 htcacheclean.service.8 \
         $RPM_BUILD_ROOT%{_mandir}/man8
+install -m 644 -p httpd.conf.5 \
+        $RPM_BUILD_ROOT%{_mandir}/man5
 
 # fix man page paths
 sed -e "s|/usr/local/apache2/conf/httpd.conf|/etc/httpd/conf/httpd.conf|" \
@@ -529,7 +539,7 @@ exit 0
 %systemd_preun httpd.service htcacheclean.service httpd.socket
 
 %postun
-%systemd_postun
+%systemd_postun httpd.service htcacheclean.service httpd.socket
 
 # Trigger for conversion from SysV, per guidelines at:
 # https://fedoraproject.org/wiki/Packaging:ScriptletSnippets#Systemd
@@ -645,6 +655,7 @@ exit $rv
 %attr(0700,apache,apache) %dir %{_localstatedir}/cache/httpd/proxy
 
 %{_mandir}/man8/*
+%{_mandir}/man5/*
 %exclude %{_mandir}/man8/httpd-init.*
 
 %{_unitdir}/httpd.service
@@ -710,8 +721,84 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Tue Apr 23 2019 Wesley Haines <wes@weatherusa.net> - 2.4.39-1-el7
+- Rebuilt for RHEL/CentOS 7
+
+* Tue Apr  9 2019 Joe Orton <jorton@redhat.com> - 2.4.39-3
+- fix statedir symlink to point to /var/lib/httpd (#1697662)
+- mod_reqtimeout: fix default values regression (PR 63325)
+
+* Tue Apr 02 2019 Lubos Uhliarik <luhliari@redhat.com> - 2.4.39-2
+- update to 2.4.39
+
+* Thu Feb 28 2019 Joe Orton <jorton@redhat.com> - 2.4.38-6
+- apachectl: cleanup and replace script wholesale (#1641237)
+ * drop "apachectl fullstatus" support
+ * run systemctl with --no-pager option
+ * implement graceful&graceful-stop by signal directly
+- run "httpd -t" from legacy action script
+
+* Tue Feb 05 2019 Lubos Uhliarik <luhliari@redhat.com> - 2.4.38-5
+- segmentation fault fix (FIPS)
+
+* Tue Feb  5 2019 Joe Orton <jorton@redhat.com> - 2.4.38-4
+- use serverroot-relative statedir, rundir by default
+
+* Fri Feb 01 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.4.38-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
+* Wed Jan 23 2019 Lubos Uhliarik <luhliari@redhat.com> - 2.4.38-2
+- new version 2.4.38 (#1668125)
+
+* Mon Jan 14 2019 Björn Esser <besser82@fedoraproject.org> - 2.4.37-6
+- Rebuilt for libcrypt.so.2 (#1666033)
+
+* Thu Nov 22 2018 Luboš Uhliarik <luhliari@redhat.com> - 2.4.37-5
+- Resolves: #1652678 - TLS connection allowed while all protocols are forbidden
+
+* Thu Nov  8 2018 Joe Orton <jorton@redhat.com> - 2.4.37-4
+- add httpd.conf(5) (#1611361)
+
+* Wed Nov 07 2018 Luboš Uhliarik <luhliari@redhat.com> - 2.4.37-3
+- Resolves: #1647241 - fix apachectl script
+
+* Wed Oct 31 2018 Joe Orton <jorton@redhat.com> - 2.4.37-2
+- add DefaultStateDir/ap_state_dir_relative()
+- mod_dav_fs: use state dir for default DAVLockDB
+- mod_md: use state dir for default MDStoreDir
+
+* Wed Oct 31 2018 Joe Orton <jorton@redhat.com> - 2.4.37-1
+- update to 2.4.37
+
+* Wed Oct 31 2018 Joe Orton <jorton@redhat.com> - 2.4.34-11
+- add htcacheclean.service(8) man page
+
+* Fri Sep 28 2018 Joe Orton <jorton@redhat.com> - 2.4.34-10
+- apachectl: don't read /etc/sysconfig/httpd
+
 * Thu Sep 27 2018 Wesley Haines <wes@weatherusa.net> - 2.4.35-1-el7
 - Rebuilt for RHEL/CentOS 7
+
+* Tue Sep 25 2018 Joe Orton <jorton@redhat.com> - 2.4.34-9
+- fix build if OpenSSL built w/o SSLv3 support
+
+* Fri Sep 21 2018 Joe Orton <jorton@redhat.com> - 2.4.34-8
+- comment-out SSLProtocol, SSLProxyProtocol from ssl.conf in
+  default configuration; now follow OpenSSL system default (#1468322)
+
+* Fri Sep 21 2018 Joe Orton <jorton@redhat.com> - 2.4.34-7
+- mod_ssl: follow OpenSSL protocol defaults if SSLProtocol
+  is not configured (Rob Crittenden, #1618371)
+
+* Tue Aug 28 2018 Luboš Uhliarik <luhliari@redhat.com> - 2.4.34-6
+- mod_ssl: enable SSLv3 and change behavior of "SSLProtocol All"
+  configuration (#1624777)
+
+* Tue Aug 21 2018 Joe Orton <jorton@redhat.com> - 2.4.34-5
+- mod_ssl: further TLSv1.3 fix (#1619389)
+
+* Mon Aug 13 2018 Joe Orton <jorton@redhat.com> - 2.4.34-4
+- mod_ssl: backport TLSv1.3 support changes from upstream (#1615059)
 
 * Fri Jul 20 2018 Joe Orton <jorton@redhat.com> - 2.4.34-3
 - mod_ssl: fix OCSP regression (upstream r1555631)
