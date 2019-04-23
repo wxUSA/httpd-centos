@@ -74,7 +74,7 @@ Patch29: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.4-cachehardmax.patch
 Patch31: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-sslmultiproxy.patch
 Patch34: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.17-socket-activation.patch
-Patch35: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-sslciphdefault.patch
+Patch38: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-sslciphdefault.patch
 #Patch36: httpd-2.4.33-r1830819+.patch
 
 # Bug fixes
@@ -224,7 +224,7 @@ interface for storing and accessing per-user session data.
 %patch30 -p1 -b .cachehardmax
 #patch31 -p1 -b .sslmultiproxy
 %patch34 -p1 -b .socketactivation
-%patch35 -p1 -b .sslciphdefault
+%patch38 -p1 -b .sslciphdefault
 #%patch36 -p1 -b .r1830819+
 
 #%patch42 -p1 -b .fallbackresource
