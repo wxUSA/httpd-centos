@@ -561,16 +561,20 @@ AP_DECLARE(void) ap_getparents(char *name)
         name[l] = '\0';
     }
 }
-
-AP_DECLARE(void) ap_no2slash(char *name)
+AP_DECLARE(void) ap_no2slash_ex(char *name, int is_fs_path)
 {
+
     char *d, *s;
+
+    if (!*name) {
+        return;
+    }
 
     s = d = name;
 
 #ifdef HAVE_UNC_PATHS
     /* Check for UNC names.  Leave leading two slashes. */
-    if (s[0] == '/' && s[1] == '/')
+    if (is_fs_path && s[0] == '/' && s[1] == '/')
         *d++ = *s++;
 #endif
 
@@ -587,6 +591,10 @@ AP_DECLARE(void) ap_no2slash(char *name)
     *d = '\0';
 }
 
+AP_DECLARE(void) ap_no2slash(char *name)
+{
+    ap_no2slash_ex(name, 1);
+}
 
 /*
  * copy at most n leading directories of s into d
@@ -597,7 +605,7 @@ AP_DECLARE(void) ap_no2slash(char *name)
  * MODIFIED FOR HAVE_DRIVE_LETTERS and NETWARE environments,
  * so that if n == 0, "/" is returned in d with n == 1
  * and s == "e:/test.html", "e:/" is returned in d
- * *** See also directory_walk in server/request.c
+ * *** See also ap_directory_walk in server/request.c
  *
  * examples:
  *    /a/b, 0  ==> /  (true for all platforms)

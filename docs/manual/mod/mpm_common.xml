@@ -50,6 +50,17 @@ switch before dumping core</description>
     operating system is not configured to write core files to the working directory
     of the crashing processes.</p>
 
+    <note type="warning">
+      <title>Security note for Linux systems</title>
+
+      <p>Using this directive on Linux may allow other processes on
+      the system (if running with similar privileges, such as CGI
+      scripts) to attach to httpd children via the <code>ptrace</code>
+      system call.  This may make weaken the protection from certain
+      security attacks.  It is not recommended to use this directive
+      on production systems.</p>
+    </note>
+    
     <note><title>Core Dumps on Linux</title>
       <p>If Apache httpd starts as root and switches to another user, the
       Linux kernel <em>disables</em> core dumps even if the directory is
@@ -272,7 +283,7 @@ in *BSDs.</compatibility>
     <p>A <var>ratio</var> between the number of (online) CPU cores and the
     number of listeners' buckets can be used to make Apache HTTP Server create
     <code>num_cpu_cores / ratio</code> listening buckets, each containing its
-    own <directive>Listen</directive>-ing socket(s) on the same port(s), and
+    own <directive module="mpm_common">Listen</directive>-ing socket(s) on the same port(s), and
     then make each child handle a single bucket (with round-robin distribution
     of the buckets at children creation time).</p>
 
@@ -329,8 +340,8 @@ in *BSDs.</compatibility>
 <directivesynopsis>
 <name>ListenBackLog</name>
 <description>Maximum length of the queue of pending connections</description>
-<syntax>ListenBacklog <var>backlog</var></syntax>
-<default>ListenBacklog 511</default>
+<syntax>ListenBackLog <var>backlog</var></syntax>
+<default>ListenBackLog 511</default>
 <contextlist><context>server config</context></contextlist>
 <modulelist><module>event</module><module>worker</module>
 <module>prefork</module><module>mpm_winnt</module>
@@ -810,6 +821,12 @@ per child process</description>
     <p>The default value for <directive>ThreadsPerChild</directive> is
     <code>64</code> when used with <module>mpm_winnt</module> and
     <code>25</code> when used with the others.</p>
+    
+    <p>The value of <directive>ThreadsPerChild</directive> can not exceed the
+    value of <directive module="mpm_common">ThreadLimit</directive>. If a
+    higher value is configured, it will be automatically reduced at start-up
+    and a warning will be logged. The relationship between these 2 directives
+    is explained in <directive module="mpm_common">ThreadLimit</directive>.</p>
 </usage>
 </directivesynopsis>
 

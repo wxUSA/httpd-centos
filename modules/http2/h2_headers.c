@@ -28,6 +28,7 @@
 
 #include "h2_private.h"
 #include "h2_h2.h"
+#include "h2_config.h"
 #include "h2_util.h"
 #include "h2_request.h"
 #include "h2_headers.h"
@@ -116,9 +117,9 @@ h2_headers *h2_headers_create(int status, apr_table_t *headers_in,
 {
     h2_headers *headers = apr_pcalloc(pool, sizeof(h2_headers));
     headers->status    = status;
-    headers->headers   = (headers_in? apr_table_copy(pool, headers_in)
+    headers->headers   = (headers_in? apr_table_clone(pool, headers_in)
                            : apr_table_make(pool, 5));
-    headers->notes     = (notes? apr_table_copy(pool, notes)
+    headers->notes     = (notes? apr_table_clone(pool, notes)
                            : apr_table_make(pool, 5));
     return headers;
 }
@@ -128,29 +129,34 @@ h2_headers *h2_headers_rcreate(request_rec *r, int status,
 {
     h2_headers *headers = h2_headers_create(status, header, r->notes, 0, pool);
     if (headers->status == HTTP_FORBIDDEN) {
-        const char *cause = apr_table_get(r->notes, "ssl-renegotiate-forbidden");
-        if (cause) {
-            /* This request triggered a TLS renegotiation that is now allowed 
-             * in HTTP/2. Tell the client that it should use HTTP/1.1 for this.
-             */
-            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, headers->status, r,
-                          APLOGNO(03061) 
-                          "h2_headers(%ld): renegotiate forbidden, cause: %s",
-                          (long)r->connection->id, cause);
-            headers->status = H2_ERR_HTTP_1_1_REQUIRED;
+        request_rec *r_prev;
+        for (r_prev = r; r_prev != NULL; r_prev = r_prev->prev) {
+            const char *cause = apr_table_get(r_prev->notes, "ssl-renegotiate-forbidden");
+            if (cause) {
+                /* This request triggered a TLS renegotiation that is not allowed
+                 * in HTTP/2. Tell the client that it should use HTTP/1.1 for this.
+                 */
+                ap_log_rerror(APLOG_MARK, APLOG_DEBUG, headers->status, r,
+                              APLOGNO(03061)
+                              "h2_headers(%ld): renegotiate forbidden, cause: %s",
+                              (long)r->connection->id, cause);
+                headers->status = H2_ERR_HTTP_1_1_REQUIRED;
+                break;
+            }
         }
     }
     if (is_unsafe(r->server)) {
-        apr_table_setn(headers->notes, H2_HDR_CONFORMANCE, 
-                       H2_HDR_CONFORMANCE_UNSAFE);
+        apr_table_setn(headers->notes, H2_HDR_CONFORMANCE, H2_HDR_CONFORMANCE_UNSAFE);
+    }
+    if (h2_config_rgeti(r, H2_CONF_PUSH) == 0 && h2_config_sgeti(r->server, H2_CONF_PUSH) != 0) {
+        apr_table_setn(headers->notes, H2_PUSH_MODE_NOTE, "0");
     }
     return headers;
 }
 
 h2_headers *h2_headers_copy(apr_pool_t *pool, h2_headers *h)
 {
-    return h2_headers_create(h->status, apr_table_copy(pool, h->headers), 
-                             apr_table_copy(pool, h->notes), h->raw_bytes, pool);
+    return h2_headers_create(h->status, h->headers, h->notes, h->raw_bytes, pool);
 }
 
 h2_headers *h2_headers_die(apr_status_t type,

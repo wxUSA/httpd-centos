@@ -200,17 +200,13 @@ static int bio_filter_out_write(BIO *bio, const char *in, int inl)
     apr_bucket *e;
     int need_flush;
 
+    BIO_clear_retry_flags(bio);
+
     /* Abort early if the client has initiated a renegotiation. */
     if (outctx->filter_ctx->config->reneg_state == RENEG_ABORT) {
         outctx->rc = APR_ECONNABORTED;
         return -1;
     }
-
-    /* when handshaking we'll have a small number of bytes.
-     * max size SSL will pass us here is about 16k.
-     * (16413 bytes to be exact)
-     */
-    BIO_clear_retry_flags(bio);
 
     /* Use a transient bucket for the output data - any downstream
      * filter must setaside if necessary. */
@@ -458,13 +454,13 @@ static int bio_filter_in_read(BIO *bio, char *in, int inlen)
     if (!in)
         return 0;
 
+    BIO_clear_retry_flags(bio);
+
     /* Abort early if the client has initiated a renegotiation. */
     if (inctx->filter_ctx->config->reneg_state == RENEG_ABORT) {
         inctx->rc = APR_ECONNABORTED;
         return -1;
     }
-
-    BIO_clear_retry_flags(bio);
 
     if (!inctx->bb) {
         inctx->rc = APR_EOF;
@@ -680,37 +676,36 @@ static apr_status_t ssl_io_input_read(bio_filter_in_ctx_t *inctx,
             }
             return inctx->rc;
         }
-        else if (rc == 0) {
-            /* If EAGAIN, we will loop given a blocking read,
-             * otherwise consider ourselves at EOF.
-             */
-            if (APR_STATUS_IS_EAGAIN(inctx->rc)
-                    || APR_STATUS_IS_EINTR(inctx->rc)) {
-                /* Already read something, return APR_SUCCESS instead.
-                 * On win32 in particular, but perhaps on other kernels,
-                 * a blocking call isn't 'always' blocking.
+        else /* (rc <= 0) */ {
+            int ssl_err;
+            conn_rec *c;
+            if (rc == 0) {
+                /* If EAGAIN, we will loop given a blocking read,
+                 * otherwise consider ourselves at EOF.
                  */
-                if (*len > 0) {
-                    inctx->rc = APR_SUCCESS;
-                    break;
-                }
-                if (inctx->block == APR_NONBLOCK_READ) {
-                    break;
-                }
-            }
-            else {
-                if (*len > 0) {
-                    inctx->rc = APR_SUCCESS;
+                if (APR_STATUS_IS_EAGAIN(inctx->rc)
+                        || APR_STATUS_IS_EINTR(inctx->rc)) {
+                    /* Already read something, return APR_SUCCESS instead.
+                     * On win32 in particular, but perhaps on other kernels,
+                     * a blocking call isn't 'always' blocking.
+                     */
+                    if (*len > 0) {
+                        inctx->rc = APR_SUCCESS;
+                        break;
+                    }
+                    if (inctx->block == APR_NONBLOCK_READ) {
+                        break;
+                    }
                 }
                 else {
-                    inctx->rc = APR_EOF;
+                    if (*len > 0) {
+                        inctx->rc = APR_SUCCESS;
+                        break;
+                    }
                 }
-                break;
             }
-        }
-        else /* (rc < 0) */ {
-            int ssl_err = SSL_get_error(inctx->filter_ctx->pssl, rc);
-            conn_rec *c = (conn_rec*)SSL_get_app_data(inctx->filter_ctx->pssl);
+            ssl_err = SSL_get_error(inctx->filter_ctx->pssl, rc);
+            c = (conn_rec*)SSL_get_app_data(inctx->filter_ctx->pssl);
 
             if (ssl_err == SSL_ERROR_WANT_READ) {
                 /*
@@ -754,6 +749,10 @@ static apr_status_t ssl_io_input_read(bio_filter_in_ctx_t *inctx,
                                   "SSL input filter read failed.");
                 }
             }
+            else if (rc == 0 && ssl_err == SSL_ERROR_ZERO_RETURN) {
+                inctx->rc = APR_EOF;
+                break;
+            }
             else /* if (ssl_err == SSL_ERROR_SSL) */ {
                 /*
                  * Log SSL errors and any unexpected conditions.
@@ -762,6 +761,10 @@ static apr_status_t ssl_io_input_read(bio_filter_in_ctx_t *inctx,
                               "SSL library error %d reading data", ssl_err);
                 ssl_log_ssl_error(SSLLOG_MARK, APLOG_INFO, mySrvFromConn(c));
 
+            }
+            if (rc == 0) {
+                inctx->rc = APR_EOF;
+                break;
             }
             if (inctx->rc == APR_SUCCESS) {
                 inctx->rc = APR_EGENERAL;
@@ -979,12 +982,10 @@ static apr_status_t ssl_io_filter_error(bio_filter_in_ctx_t *inctx,
             break;
 
     case MODSSL_ERROR_BAD_GATEWAY:
-        bucket = ap_bucket_error_create(HTTP_BAD_REQUEST, NULL,
-                                        f->c->pool,
-                                        f->c->bucket_alloc);
         ap_log_cerror(APLOG_MARK, APLOG_INFO, 0, f->c, APLOGNO(01997)
                       "SSL handshake failed: sending 502");
-        break;
+        f->c->aborted = 1;
+        return APR_EGENERAL;
 
     default:
         return status;
@@ -1237,7 +1238,7 @@ static apr_status_t ssl_io_filter_handshake(ssl_filter_ctx_t *filter_ctx)
                 ssl_log_ssl_error(SSLLOG_MARK, APLOG_WARNING, server);
             }
         }
-#endif
+#endif /* defined HAVE_TLSEXT */
 
         if ((n = SSL_connect(filter_ctx->pssl)) <= 0) {
             ap_log_cerror(APLOG_MARK, APLOG_INFO, 0, c, APLOGNO(02003)
@@ -1317,7 +1318,7 @@ static apr_status_t ssl_io_filter_handshake(ssl_filter_ctx_t *filter_ctx)
             /* ensure that the SSL structures etc are freed, etc: */
             ssl_filter_io_shutdown(filter_ctx, c, 1);
             apr_table_setn(c->notes, "SSL_connect_rv", "err");
-            return HTTP_BAD_GATEWAY;
+            return MODSSL_ERROR_BAD_GATEWAY;
         }
 
         apr_table_setn(c->notes, "SSL_connect_rv", "ok");

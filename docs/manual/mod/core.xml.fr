@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE modulesynopsis SYSTEM "../style/modulesynopsis.dtd">
 <?xml-stylesheet type="text/xsl" href="../style/manual.fr.xsl"?>
-<!-- English Revision: 1838466:1841039 (outdated) -->
+<!-- English Revision: 1855819 -->
 <!-- French translation : Lucien GENTIS -->
 <!-- Reviewed by : Vincent Deffontaines -->
 
@@ -2478,7 +2478,7 @@ host</context>
 <name>IfFile</name>
 <description>Regroupe des directives qui ne seront traitées que si un fichier
 existe au démarrage</description>
-<syntax>&lt;IfFile [!]<var>parameter-name</var>&gt; ...
+<syntax>&lt;IfFile [!]<var>filename</var>&gt; ...
     &lt;/IfFile&gt;</syntax>
 <contextlist><context>server config</context><context>virtual host</context>
 <context>directory</context><context>.htaccess</context>
@@ -3441,6 +3441,27 @@ host</context>
 &lt;/LocationMatch&gt;
 </highlight>
 
+    <note><title>Note à propos du slash '/'</title>
+      <p>La signification du caractère slash '/' dépend de l'endroit où il
+      apparaît dans une URL. Les utilisateurs sont habitués à voir de multiples
+      slashes adjacents réduits à un seul au sein du système de fichiers (par
+      exemple, <code>/home///foo</code> est équivalent à
+      <code>/home/foo</code>). Ce n'est n'est cependant pas toujours le cas au
+      sein des URLs. En effet, si vous souhaitez spécifier plusieurs slashes,
+      vous devez le faire explicitement au sein de la directive <directive
+      type="section" module="core">LocationMatch</directive> et de la version
+      regex de la directive <directive type="section">Location</directive>.</p>
+
+      <p>Par exemple, <code>&lt;LocationMatch "^/abc"&gt;</code> correspondra à
+      l'URL <code>/abc</code>, mais pas à l'URL <code>//abc</code>. La directive
+      (non-regex) <directive type="section">Location</directive> se comporte de
+      la même manière lorsqu'elle est utilisée dans les requêtes de mandataire.
+      Par contre, pour les autres types de requêtes, la directive <directive
+      type="section">Location</directive> considérera plusieurs slashes
+      adjacents comme équivalents à un seul slash. Par exemple, si vous
+      spécifiez <code>&lt;Location "/abc/def"&gt;</code>, une requête pour
+      <code>/abc//def</code> correspondra.</p>
+    </note>
 </usage>
 <seealso><a href="../sections.html">Comment fonctionnent les sections
 &lt;Directory&gt;, &lt;Location&gt; et &lt;Files&gt;</a> pour une
@@ -5538,6 +5559,34 @@ configuré pour ne transmettre que des méthodes reconnues aux modules.</p>
 </usage>
 <seealso><directive module="core">HTTPProtocolOptions</directive></seealso>
 <seealso><directive module="mod_allowmethods">AllowMethods</directive></seealso>
+</directivesynopsis>
+
+<directivesynopsis>
+<name>MergeSlashes</name>
+<description>Fusion des slashes consécutifs dans les URLs par le serveur.
+</description>
+<syntax>MergeSlashes ON|OFF</syntax>
+<default>MergeSlashes ON</default>
+<contextlist><context>server config</context><context>virtual host</context>
+</contextlist>
+<compatibility>Disponible à partir de la version 2.4.39 du serveur HTTP Apache</compatibility>
+
+<usage>
+    <p>Par défaut, le serveur fusionne les caractères slash ('/') multiples et
+    consécutifs dans la partie chemin de l'URL d'une requête.</p>
+
+    <p>Lorsque cette partie chemin de l'URL est appliquée au système de
+    fichiers, ces slashes multiples sont inutiles. Il peut être cependant
+    préférable de conserver ces slashes multiples et consécutifs car ils peuvent
+    avoir une signification dans le cas des URLs gérées différemment, par
+    exemple par CGI ou par un serveur mandataire. Il convient alors de définir
+    <directive>MergeSlashes</directive> à <em>OFF</em>. Dans ces types de
+    configuration, les expressions rationnelles utilisées dans le
+    fichier de configuration pour effectuer une comparaison de la partie chemin
+    de l'URL ((<directive>LocationMatch</directive>,
+    <directive>RewriteRule</directive>, ...) doivent en effet tenir compte de la
+    présence éventuelle de slashes multiples et consécutifs.</p>
+</usage>
 </directivesynopsis>
 
 </modulesynopsis>
