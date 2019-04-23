@@ -259,12 +259,12 @@ sed '
 s,@MPM@,%{mpm},g
 s,@DOCROOT@,%{docroot},g
 s,@LOGDIR@,%{_localstatedir}/log/httpd,g
-' < $RPM_SOURCE_DIR/httpd.conf.xml \
+' < SOURCES/httpd.conf.xml \
     > httpd.conf.xml
 
 xmlto man ./httpd.conf.xml
-xmlto man $RPM_SOURCE_DIR/htcacheclean.service.xml
-xmlto man $RPM_SOURCE_DIR/httpd.service.xml
+xmlto man ./htcacheclean.service.xml
+xmlto man ./httpd.service.xml
 
 : Building with MMN %{mmn}, MMN-ISA %{mmnisa}
 : Default MPM is %{mpm}, vendor string is '%{vstring}'
