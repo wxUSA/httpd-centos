@@ -110,6 +110,10 @@ static const char *set_worker_hc_param(apr_pool_t *p,
     if (!worker && !v) {
         return "Bad call to set_worker_hc_param()";
     }
+    if (!ctx) {
+        ctx = hc_create_config(p, s);
+        ap_set_module_config(s->module_config, &proxy_hcheck_module, ctx);
+    }
     temp = (hc_template_t *)v;
     if (!strcasecmp(key, "hctemplate")) {
         hc_template_t *template;
@@ -483,6 +487,10 @@ static proxy_worker *hc_get_hcworker(sctx_t *ctx, proxy_worker *worker,
         hc->hash.def = hc->s->hash.def = ap_proxy_hashfunc(hc->s->name, PROXY_HASHFUNC_DEFAULT);
         hc->hash.fnv = hc->s->hash.fnv = ap_proxy_hashfunc(hc->s->name, PROXY_HASHFUNC_FNV);
         hc->s->port = port;
+        if (worker->s->conn_timeout_set) {
+            hc->s->conn_timeout_set = worker->s->conn_timeout_set;
+            hc->s->conn_timeout = worker->s->conn_timeout;
+        }
         /* Do not disable worker in case of errors */
         hc->s->status |= PROXY_WORKER_IGNORE_ERRORS;
         /* Mark as the "generic" worker */
@@ -762,10 +770,8 @@ static apr_status_t hc_check_http(baton_t *baton)
     }
 
     r = create_request_rec(ptemp, ctx->s, baton->balancer, wctx->method);
-    if (!backend->connection) {
-        if ((status = ap_proxy_connection_create_ex("HCOH", backend, r)) != OK) {
-            return backend_cleanup("HCOH", backend, ctx->s, status);
-        }
+    if ((status = ap_proxy_connection_create_ex("HCOH", backend, r)) != OK) {
+        return backend_cleanup("HCOH", backend, ctx->s, status);
     }
     set_request_connection(r, backend->connection);
 
@@ -917,9 +923,6 @@ static apr_status_t hc_watchdog_callback(int state, void *data,
 
         case AP_WATCHDOG_STATE_RUNNING:
             /* loop thru all workers */
-            ap_log_error(APLOG_MARK, APLOG_TRACE5, 0, s,
-                         "Run of %s watchdog.",
-                         HCHECK_WATHCHDOG_NAME);
             if (s) {
                 int i;
                 conf = (proxy_server_conf *) ap_get_module_config(s->module_config, &proxy_module);
@@ -1060,6 +1063,8 @@ static void hc_show_exprs(request_rec *r)
     int i;
     sctx_t *ctx = (sctx_t *) ap_get_module_config(r->server->module_config,
                                                   &proxy_hcheck_module);
+    if (!ctx)
+        return;
     if (apr_is_empty_table(ctx->conditions))
         return;
 
@@ -1089,6 +1094,8 @@ static void hc_select_exprs(request_rec *r, const char *expr)
     int i;
     sctx_t *ctx = (sctx_t *) ap_get_module_config(r->server->module_config,
                                                   &proxy_hcheck_module);
+    if (!ctx)
+        return;
     if (apr_is_empty_table(ctx->conditions))
         return;
 
@@ -1112,6 +1119,8 @@ static int hc_valid_expr(request_rec *r, const char *expr)
     int i;
     sctx_t *ctx = (sctx_t *) ap_get_module_config(r->server->module_config,
                                                   &proxy_hcheck_module);
+    if (!ctx)
+        return 0;
     if (apr_is_empty_table(ctx->conditions))
         return 0;
 

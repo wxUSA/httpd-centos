@@ -1049,9 +1049,10 @@ static int proxy_handler(request_rec *r)
         char *end;
         maxfwd = apr_strtoi64(str, &end, 10);
         if (maxfwd < 0 || maxfwd == APR_INT64_MAX || *end) {
-            return ap_proxyerror(r, HTTP_BAD_REQUEST,
-                    apr_psprintf(r->pool,
-                            "Max-Forwards value '%s' could not be parsed", str));
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r, APLOGNO(10188) 
+                          "Max-Forwards value '%s' could not be parsed", str);
+            return ap_proxyerror(r, HTTP_BAD_REQUEST, 
+                          "Max-Forwards request header could not be parsed");
         }
         else if (maxfwd == 0) {
             switch (r->method_number) {
@@ -1567,6 +1568,8 @@ static void *create_proxy_dir_config(apr_pool_t *p, char *dummy)
     new->error_override_set = 0;
     new->add_forwarded_headers = 1;
     new->add_forwarded_headers_set = 0;
+    new->forward_100_continue = 1;
+    new->forward_100_continue_set = 0;
 
     return (void *) new;
 }
@@ -1603,6 +1606,11 @@ static void *merge_proxy_dir_config(apr_pool_t *p, void *basev, void *addv)
         : add->add_forwarded_headers;
     new->add_forwarded_headers_set = add->add_forwarded_headers_set
         || base->add_forwarded_headers_set;
+    new->forward_100_continue =
+        (add->forward_100_continue_set == 0) ? base->forward_100_continue
+                                             : add->forward_100_continue;
+    new->forward_100_continue_set = add->forward_100_continue_set
+                                    || base->forward_100_continue_set;
     
     return new;
 }
@@ -2103,6 +2111,14 @@ static const char *
     conf->preserve_host_set = 1;
     return NULL;
 }
+static const char *
+   forward_100_continue(cmd_parms *parms, void *dconf, int flag)
+{
+   proxy_dir_conf *conf = dconf;
+   conf->forward_100_continue = flag;
+   conf->forward_100_continue_set = 1;
+   return NULL;
+}
 
 static const char *
     set_recv_buffer_size(cmd_parms *parms, void *dummy, const char *arg)
@@ -2361,7 +2377,7 @@ static const char *add_member(cmd_parms *cmd, void *dummy, const char *arg)
                          elts[i].key, elts[i].val, ap_proxy_worker_name(cmd->pool, worker));
         } else {
             err = set_worker_param(cmd->pool, cmd->server, worker, elts[i].key,
-                                               elts[i].val);
+                                   elts[i].val);
             if (err)
                 return apr_pstrcat(cmd->temp_pool, "BalancerMember ", err, NULL);
         }
@@ -2676,6 +2692,9 @@ static const command_rec proxy_cmds[] =
      "Configure local source IP used for request forward"),
     AP_INIT_FLAG("ProxyAddHeaders", add_proxy_http_headers, NULL, RSRC_CONF|ACCESS_CONF,
      "on if X-Forwarded-* headers should be added or completed"),
+    AP_INIT_FLAG("Proxy100Continue", forward_100_continue, NULL, RSRC_CONF|ACCESS_CONF,
+     "on if 100-Continue should be forwarded to the origin server, off if the "
+     "proxy should handle it by itself"),
     {NULL}
 };
 

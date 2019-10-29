@@ -1,5 +1,171 @@
                                                          -*- coding: utf-8 -*-
+Changes with Apache 2.4.42
+
+  *) mod_md: Adding the several new features.
+     The module offers an implementation of OCSP Stapling that can replace fully or
+     for a limited set of domains the existing one from mod_ssl. OCSP handling
+     is part of mod_md's monitoring and message notifications. If can be used
+     for sites that do not have ACME certificates.
+     The url for a CTLog Monitor can be configured. It is used in the server-status
+     to link to the external status page of a certicate.
+     The MDMessageCmd is called with argument "installed" when a new certificate
+     has been activated on server restart/reload. This allows for processing of
+     the new certificate, for example to applications that require it in different
+     locations or formats.
+     [Stefan Eissing]
+
+  *) mod_proxy_balancer: Fix case-sensitive referer check related to CSRF/XSS 
+     protection. PR 63688. [Armin Abfalterer <a.abfalterer gmail.com>]
+
+  *) mod_deflate, mod_brotli: honor "Accept-Encoding: foo;q=0" as per RFC 7231; which
+     means 'foo' is "not acceptable".  PR 58158 [Chistophe Jaillet]
+
+Changes with Apache 2.4.41
+
+  *) SECURITY: CVE-2019-10097 (cve.mitre.org)
+     mod_remoteip: Fix stack buffer overflow and NULL pointer deference
+     when reading the PROXY protocol header.  [Joe Orton,
+     Daniel McCarney <cpu letsencrypt.org>]
+
+  *) SECURITY: CVE-2019-9517 (cve.mitre.org)
+     mod_http2: a malicious client could perform a DoS attack by flooding
+        a connection with requests and basically never reading responses
+        on the TCP connection. Depending on h2 worker dimensioning, it was
+        possible to block those with relatively few connections. [Stefan Eissing]
+
+  *) SECURITY: CVE-2019-10098 (cve.mitre.org)
+     rewrite, core: Set PCRE_DOTALL flag by default to avoid unpredictable
+     matches and substitutions with encoded line break characters.
+     [Yann Ylavic]
+
+  *) SECURITY: CVE-2019-10092 (cve.mitre.org)
+     Remove HTML-escaped URLs from canned error responses to prevent misleading
+     text/links being displayed via crafted links. [Eric Covener]
+
+  *) SECURITY: CVE-2019-10082 (cve.mitre.org)
+     mod_http2: Using fuzzed network input, the http/2 session
+     handling could be made to read memory after being freed,
+     during connection shutdown. [Stefan Eissing]
+
+  *) SECURITY: CVE-2019-10081 (cve.mitre.org)
+     mod_http2: HTTP/2 very early pushes, for example configured with "H2PushResource",
+        could lead to an overwrite of memory in the pushing request's pool,
+        leading to crashes. The memory copied is that of the configured push
+        link header values, not data supplied by the client. [Stefan Eissing]
+
+  *) mod_proxy_balancer: Improve balancer-manager protection against 
+     XSS/XSRF attacks from trusted users.  [Joe Orton,
+     Niels Heinen <heinenn google.com>]
+
+  *) mod_session: Introduce SessionExpiryUpdateInterval which allows to
+     configure the session/cookie expiry's update interval. PR 57300.
+     [Paul Spangler <paul.spangler ni.com>]
+
+  *) modules/filters: Fix broken compilation when using old GCC (<4.2.x).
+     PR 63633.  [Rainer Jung, Joe Orton]
+
+  *) mod_ssl: Fix startup failure in 2.4.40 with SSLCertificateChainFile
+     configured for a domain managed by mod_md.  [Stefan Eissing]
+
 Changes with Apache 2.4.40
+
+  *) core, mod_rewrite: Set PCRE_DOTALL by default. Revert via 
+     RegexDefaultOptions -DOTALL [Yann Ylavic]
+
+  *) core: Remove request details from built-in error documents [Eric Covener]
+
+  *) mod_http2: core setting "LimitRequestFieldSize" is not additionally checked on
+     merged header fields, just as HTTP/1.1 does. [Stefan Eissing, Michael Kaufmann]
+
+  *) mod_http2: fixed a bug that prevented proper stream cleanup when connection
+     throttling was in place. Stream resets by clients on streams initiated by them
+     are counted as possible trigger for throttling. [Stefan Eissing]
+
+  *) mod_http2/mpm_event: Fixes the behaviour when a HTTP/2 connection has nothing
+     more to write with streams ongoing (flow control block). The timeout waiting
+     for the client to send WINODW_UPDATE was incorrectly KeepAliveTimeout and not
+     Timeout as it should be. Fixes PR 63534. [Yann Ylavic, Stefan Eissing]
+
+  *) mod_proxy_balancer: Load balancer required byrequests when bytraffic chosen.
+     PR 62372. [Jim Jagielski]
+
+  *) mod_proxy_hcheck: Create the configuration for mod_proxy_hcheck
+     when used in BalancerMember. PR 60757. [Jean-Frederic Clere]
+
+  *) mod_proxy_hcheck: Mute extremely frequent debug message. [Yann Ylavic]
+
+  *) mod_ssl/mod_md: reversing dependency by letting mod_ssl offer hooks for
+     adding certificates and keys to a virtual host. An additional hook allows
+     answering special TLS connections as used in ACME challenges.
+     Adding 2 new hooks for init/get of OCSP stapling status information when
+     other modules want to provide those. Falls back to own implementation with
+     same behaviour as before.
+     [Stefan Eissing]
+  
+  *) mod_md: new features
+     - protocol
+       - supports the ACMEv2 protocol. It is the default and will be used on the next
+         certificate renewal, unless another "MDCertificateAuthority" is configured
+       - ACMEv2 endpoints use the GET via empty POST way of accessing resources, see
+         announcement by Let's Encrypt:       
+         https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380
+     - challenges
+       - new challenge method 'tls-alpn-01' implemented
+       - challenge type 'tls-sni-01' has been removed as CAs do not offer this any longer
+       - supports command configuration to setup/teardown 'dns-01' challenges
+       - supports wildcard certificates when dns challenges are configured
+     - status information and monitoring
+       - a domain exposes its status at https://<domain>/.httpd/certificate-status
+       - Managed Domains are now in Apache's 'server-status' page
+       - A new handler 'md-status' exposes verbose status information in JSON format
+     - new directives
+       - "MDCertificateFile" and "MDCertificateKeyFile" to configure a
+         Managed Domain that uses static files. Auto-renewal is turned off for those.
+       - "MDMessageCmd" that is invoked on several events: 'renewed', 'expiring' and
+         'errored'.
+       - "MDWarnWindow" directive to configure when expiration warnings shall be issued.
+     [Stefan Eissing]
+
+  *) mod_mime_magic: Fix possible corruption of returned strings.
+     [Christophe Jaillet]
+
+  *) Default "conf/magic": Fix pattern for "audio/x-wav" for WAV files,
+     remove "audio/unknown" pattern for other RIFF files.
+     [Àngel Ollé Blázquez <aollebla redhat.com>]
+
+  *) mod_proxy_http2: fixing a potential NULL pointer use in logging.
+     [Christophe Jaillet, Dr Silvio Cesare InfoSect]
+
+  *) mod_dav: Reduce the amount of memory needed when doing PROPFIND's on large
+     collections by improving the memory management. [Joe Orton, Ruediger Pluem]
+
+  *) mod_proxy_http2: adding support for handling trailers in both directions.
+     PR 63502. [Stefan Eissing]
+
+  *) mod_proxy_http: forward 100-continue, and minimize race conditions when
+     reusing backend connections. PR 60330. [Yann Ylavic, Jean-Frederic Clere]
+
+  *) mod_proxy_balancer: Fix some HTML syntax issues.  [Christophe Jaillet]
+
+  *) When using mod_status with the Event MPM, report the number of requests
+     associated with an active connection in the "ACC" field. Previously
+     zero was always reported with this MPM.  PR60647. [Eric Covener]
+
+  *) mod_http2: remove the no longer existing h2_ngn_shed.c from Cmake.
+     [Stefan Eissing]
+
+  *) mod_proxy/ssl: Proxy SSL client certificate configuration and other proxy
+     SSL configurations broken inside <Proxy> context.  PR 63430.
+     [Ruediger Pluem, Yann Ylavic]
+
+  *) mod_proxy: allow SSLProxyCheckPeer* usage for all proxy modules.
+     PR 61857.  [Markus Gausling <markusgausling googlemail.com>, Yann Ylavic]
+
+  *) mod_reqtimeout: Fix default rates missing (not applied) in 2.4.39.
+     PR 63325. [Yann Ylavic]
+
+  *) mod_info: Fix output of server settings for PIPE_BUF in mod_info in
+     the rare case that PIPE_BUF is defined. [Rainer Jung]
 
   *) mod_md: Store permissions are enforced on file creation, enforcing restrictions in
      spite of umask. Fixes <https://github.com/icing/mod_md/issues/117>. [Stefan Eissing]
@@ -107,6 +273,10 @@ Changes with Apache 2.4.39
 
   *) mod_reqtimeout: Allow to configure (TLS-)handshake timeouts.
      PR 61310. [Yann Ylavic]
+
+  *) core: Split out the ability to parse wildcard files and directories
+     from the Include/IncludeOptional directives into a generic set of
+     functions ap_dir_nofnmatch() and ap_dir_fnmatch(). [Graham Leggett]
 
   *) mod_proxy_wstunnel: Fix websocket proxy over UDS.
      PR 62932 <pavel dcmsys.com>
@@ -364,7 +534,7 @@ Changes with Apache 2.4.34
      connections.  [Ruediger Pluem, Joe Orton]
 
   *) mod_proxy_html: Fix variable interpolation and memory allocation failure
-     in ProxyHTMLURLMap.  [Ewald Dieterich <ewald mailbox.org>]
+     in ProxyHTMLURLMap.  PR 62344.  [Ewald Dieterich <ewald mailbox.org>]
 
   *) mod_remoteip: Fix RemoteIP{Trusted,Internal}ProxyList loading broken by 2.4.30.
      PR 62220.  [Chritophe Jaillet, Yann Ylavic]
@@ -441,6 +611,9 @@ Changes with Apache 2.4.34
 
   *) core: Add <IfFile>, <IfDirective> and <IfSection> conditional
      section containers.  [Eric Covener, Joe Orton]
+
+  *) rotatelogs: Add -D option to create parent directories.  PR 46669.
+     [Philippe Lantin <plantin cobaltgroup.com>, Ben Reser, Rainer Jung]
 
 Changes with Apache 2.4.33
 

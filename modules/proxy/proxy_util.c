@@ -368,12 +368,9 @@ PROXY_DECLARE(char *)
 
 PROXY_DECLARE(int) ap_proxyerror(request_rec *r, int statuscode, const char *message)
 {
-    const char *uri = ap_escape_html(r->pool, r->uri);
     apr_table_setn(r->notes, "error-notes",
         apr_pstrcat(r->pool,
-            "The proxy server could not handle the request <em><a href=\"",
-            uri, "\">", ap_escape_html(r->pool, r->method), "&nbsp;", uri,
-            "</a></em>.<p>\n"
+            "The proxy server could not handle the request<p>"
             "Reason: <strong>", ap_escape_html(r->pool, message),
             "</strong></p>",
             NULL));
@@ -1172,11 +1169,11 @@ PROXY_DECLARE(char *) ap_proxy_define_balancer(apr_pool_t *p,
      * exist, that's OK at this time. We check when we share and sync
      */
     lbmethod = ap_lookup_provider(PROXY_LBMETHOD, "byrequests", "0");
-
+    (*balancer)->lbmethod = lbmethod;
+    
     (*balancer)->workers = apr_array_make(p, 5, sizeof(proxy_worker *));
     (*balancer)->gmutex = NULL;
     (*balancer)->tmutex = NULL;
-    (*balancer)->lbmethod = lbmethod;
 
     if (do_malloc)
         bshared = ap_malloc(sizeof(proxy_balancer_shared));
@@ -1190,6 +1187,8 @@ PROXY_DECLARE(char *) ap_proxy_define_balancer(apr_pool_t *p,
     if (PROXY_STRNCPY(bshared->name, uri) != APR_SUCCESS) {
         return apr_psprintf(p, "balancer name (%s) too long", uri);
     }
+    (*balancer)->lbmethod_set = 1;
+
     /*
      * We do the below for verification. The real sname will be
      * done post_config
@@ -1244,6 +1243,7 @@ PROXY_DECLARE(apr_status_t) ap_proxy_share_balancer(proxy_balancer *balancer,
     lbmethod = ap_lookup_provider(PROXY_LBMETHOD, balancer->s->lbpname, "0");
     if (lbmethod) {
         balancer->lbmethod = lbmethod;
+        balancer->lbmethod_set = 1;
     } else {
         ap_log_error(APLOG_MARK, APLOG_CRIT, 0, ap_server_conf, APLOGNO(02432)
                      "Cannot find LB Method: %s", balancer->s->lbpname);
@@ -1252,10 +1252,11 @@ PROXY_DECLARE(apr_status_t) ap_proxy_share_balancer(proxy_balancer *balancer,
     if (*balancer->s->nonce == PROXY_UNSET_NONCE) {
         char nonce[APR_UUID_FORMATTED_LENGTH + 1];
         apr_uuid_t uuid;
-        /* Retrieve a UUID and store the nonce for the lifetime of
-         * the process.
-         */
-        apr_uuid_get(&uuid);
+
+        /* Generate a pseudo-UUID from the PRNG to use as a nonce for
+         * the lifetime of the process. uuid.data is a char array so
+         * this is an adequate substitute for apr_uuid_get(). */
+        ap_random_insecure_bytes(uuid.data, sizeof uuid.data);
         apr_uuid_format(nonce, &uuid);
         rv = PROXY_STRNCPY(balancer->s->nonce, nonce);
     }
@@ -3220,6 +3221,16 @@ static int proxy_connection_create(const char *proxy_function,
                          backend_addr, conn->hostname);
             return HTTP_INTERNAL_SERVER_ERROR;
         }
+        if (conn->ssl_hostname) {
+            /* Set a note on the connection about what CN is requested,
+             * such that mod_ssl can check if it is requested to do so.
+             */
+            ap_log_cerror(APLOG_MARK, APLOG_TRACE1, 0, conn->connection, 
+                          "%s: set SNI to %s for (%s)", proxy_function,
+                          conn->ssl_hostname, conn->hostname);
+            apr_table_setn(conn->connection->notes, "proxy-request-hostname",
+                           conn->ssl_hostname);
+        }
     }
     else {
         /* TODO: See if this will break FTP */
@@ -3593,10 +3604,7 @@ PROXY_DECLARE(int) ap_proxy_create_hdrbrgd(apr_pool_t *p,
      * To be compliant, we only use 100-Continue for requests with bodies.
      * We also make sure we won't be talking HTTP/1.0 as well.
      */
-    do_100_continue = (worker->s->ping_timeout_set
-                       && ap_request_has_body(r)
-                       && (PROXYREQ_REVERSE == r->proxyreq)
-                       && !(apr_table_get(r->subprocess_env, "force-proxy-request-1.0")));
+    do_100_continue = PROXY_DO_100_CONTINUE(worker, r);
 
     if (apr_table_get(r->subprocess_env, "force-proxy-request-1.0")) {
         /*
@@ -3613,7 +3621,9 @@ PROXY_DECLARE(int) ap_proxy_create_hdrbrgd(apr_pool_t *p,
         buf = apr_pstrcat(p, r->method, " ", url, " HTTP/1.1" CRLF, NULL);
     }
     if (apr_table_get(r->subprocess_env, "proxy-nokeepalive")) {
-        origin->keepalive = AP_CONN_CLOSE;
+        if (origin) {
+            origin->keepalive = AP_CONN_CLOSE;
+        }
         p_conn->close = 1;
     }
     ap_xlate_proto_to_ascii(buf, strlen(buf));
@@ -3704,14 +3714,6 @@ PROXY_DECLARE(int) ap_proxy_create_hdrbrgd(apr_pool_t *p,
      */
     if (do_100_continue) {
         const char *val;
-
-        if (!r->expecting_100) {
-            /* Don't forward any "100 Continue" response if the client is
-             * not expecting it.
-             */
-            apr_table_setn(r->subprocess_env, "proxy-interim-response",
-                                              "Suppress");
-        }
 
         /* Add the Expect header if not already there. */
         if (((val = apr_table_get(r->headers_in, "Expect")) == NULL)

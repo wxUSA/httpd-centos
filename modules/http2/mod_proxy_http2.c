@@ -64,7 +64,6 @@ typedef struct h2_proxy_ctx {
     int capacity;
     
     unsigned is_ssl : 1;
-    unsigned flushall : 1;
     
     request_rec *r;            /* the request processed in this ctx */
     apr_status_t r_status;     /* status of request work */
@@ -337,7 +336,6 @@ static int proxy_http2_handler(request_rec *r,
     ctx->is_ssl = is_ssl;
     ctx->worker = worker;
     ctx->conf = conf;
-    ctx->flushall = apr_table_get(r->subprocess_env, "proxy-flushall")? 1 : 0;
     ctx->req_buffer_size = (32*1024);
     ctx->r = r;
     ctx->r_status = status = HTTP_SERVICE_UNAVAILABLE;
@@ -387,32 +385,22 @@ run_connect:
     }
     
     /* Step Three: Create conn_rec for the socket we have open now. */
-    if (!ctx->p_conn->connection) {
-        status = ap_proxy_connection_create_ex(ctx->proxy_func, ctx->p_conn, ctx->r);
-        if (status != OK) {
-            ap_log_cerror(APLOG_MARK, APLOG_DEBUG, status, ctx->owner, APLOGNO(03353)
-                          "setup new connection: is_ssl=%d %s %s %s", 
-                          ctx->p_conn->is_ssl, ctx->p_conn->ssl_hostname, 
-                          locurl, ctx->p_conn->hostname);
-            ctx->r_status = status;
-            goto cleanup;
-        }
-        
-        if (!ctx->p_conn->data && ctx->is_ssl) {
-            /* New SSL connection: set a note on the connection about what
-             * protocol we want.
-             */
-            apr_table_setn(ctx->p_conn->connection->notes,
-                           "proxy-request-alpn-protos", "h2");
-            if (ctx->p_conn->ssl_hostname) {
-                ap_log_cerror(APLOG_MARK, APLOG_TRACE1, 0, ctx->owner, 
-                              "set SNI to %s for (%s)", 
-                              ctx->p_conn->ssl_hostname, 
-                              ctx->p_conn->hostname);
-                apr_table_setn(ctx->p_conn->connection->notes,
-                               "proxy-request-hostname", ctx->p_conn->ssl_hostname);
-            }
-        }
+    status = ap_proxy_connection_create_ex(ctx->proxy_func, ctx->p_conn, ctx->r);
+    if (status != OK) {
+        ap_log_cerror(APLOG_MARK, APLOG_DEBUG, status, ctx->owner, APLOGNO(03353)
+                      "setup new connection: is_ssl=%d %s %s %s", 
+                      ctx->p_conn->is_ssl, ctx->p_conn->ssl_hostname, 
+                      locurl, ctx->p_conn->hostname);
+        ctx->r_status = status;
+        goto cleanup;
+    }
+    
+    if (!ctx->p_conn->data && ctx->is_ssl) {
+        /* New SSL connection: set a note on the connection about what
+         * protocol we want.
+         */
+        apr_table_setn(ctx->p_conn->connection->notes,
+                       "proxy-request-alpn-protos", "h2");
     }
 
     if (ctx->master->aborted) goto cleanup;

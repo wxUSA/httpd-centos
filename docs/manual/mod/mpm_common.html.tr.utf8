@@ -90,6 +90,17 @@
       durumunda <code>core</code> dosyasını çöken sürecin çalışma dizinine
       yazacak şekilde yapılandırılmamışsa, bu yönergenin bir etkisi olmaz.</p>
 
+    <div class="warning">
+      <h3>Linux sistemleri için güvenlik bilgisi</h3>
+
+      <p>Bu yönergenin Linux'ta kullanılması, sistemdeki diğer işlemlerin
+      (benzer yetkilerle çalıştırılan CGI komut dosyaları gibi) 
+      <code>ptrace</code> sistem çağrısı yoluyla httpd çocuklarına eklenmesine 
+      izin verebilir. Bu, bazı güvenlik saldırılarına karşı korumayı 
+      zayıflatabilir. Bu yönergenin üretim sistemlerinde kullanılması 
+      önerilmez.</p>
+    </div>
+    
     <div class="note"><h3>Linux üzerinde <code>core</code> dökümlemek</h3>
       <p>Apache httpd root olarak başlatılıp başka bir kullanıcıya geçilirse
         Linux çekirdeği, süreç tarafından yazılabilir olsa bile

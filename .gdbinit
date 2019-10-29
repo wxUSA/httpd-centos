@@ -330,10 +330,26 @@ document dump_process_rec
     Print process_rec info
 end
 
+define dump_server_addr_recs
+    set $sa_ = $arg0
+    set $san_ = 0
+    while $sa_
+      ### need to call apr_sockaddr_info_getbuf to print ->host_addr properly
+      ### which is a PITA since we need a buffer :(
+      printf " addr#%d: vhost=%s -> :%d\n", $san_++, $sa_->virthost, $sa_->host_port
+      set $sa_ = $sa_->next
+    end
+end
+document dump_server_addr_recs
+    Print server_addr_rec info
+end
+
+
 define dump_server_rec
     set $s = $arg0
-    printf "name=%s:%d\n", \
-            $s->server_hostname, $s->port
+    printf "name=%s:%d (0x%lx)\n", \
+            $s->server_hostname, $s->port, $s
+    dump_server_addr_recs $s->addrs
     dump_process_rec($s->process)
 end
 document dump_server_rec
@@ -361,6 +377,28 @@ define dump_request_tree
         set $r = $r->main
     end
 end        
+
+define dump_scoreboard
+    # Need to reserve size of array first before string literals could be
+    # put in
+    set $status = {0, 1, 2, 3, 4 ,5 ,6 ,7 ,8 ,9 ,10}
+    set $status = {"DEAD", "STARTING", "READY", "BUSY_READ", "BUSY_WRITE", "BUSY_KEEPALIVE", "BUSY_LOG", "BUSY_DNS", "CLOSING", "GRACEFUL", "IDLE_KILL"}
+    set $i = 0
+    while ($i < server_limit)
+        if ap_scoreboard_image->servers[$i][0].pid != 0
+            set $j = 0
+            while ($j < threads_per_child)
+                set $ws = ap_scoreboard_image->servers[$i][$j]
+                printf "pid: %d, tid: 0x%lx, status: %s\n", $ws.pid, $ws.tid, $status[$ws.status]
+                set $j = $j +1
+            end
+        end
+        set $i = $i +1
+    end
+end
+document dump_scoreboard
+    Dump the scoreboard
+end
 
 define dump_allocator
     printf "Allocator current_free_index = %d, max_free_index = %d\n", \
@@ -414,14 +452,18 @@ define dump_one_pool
 end
 
 define dump_all_pools
-    set $root = $arg0
+    if $argc > 0
+        set $root = $arg0
+    else
+        set $root = ap_pglobal
+    end
     while $root->parent
         set $root = $root->parent
     end
     dump_pool_and_children $root
 end
 document dump_all_pools
-    Dump the whole pool hierarchy starting from apr_global_pool. Requires an arbitrary pool as starting parameter.
+    Dump the whole pool hierarchy starting from apr_global_pool. Optionally takes an arbitrary pool as starting parameter.
 end
 
 python

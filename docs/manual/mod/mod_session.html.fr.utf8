@@ -88,6 +88,7 @@
 <li><img alt="" src="../images/down.gif" /> <a href="#session">Session</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#sessionenv">SessionEnv</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#sessionexclude">SessionExclude</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#sessionexpiryupdateinterval">SessionExpiryUpdateInterval</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#sessionheader">SessionHeader</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#sessioninclude">SessionInclude</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#sessionmaxage">SessionMaxAge</a></li>
@@ -318,7 +319,7 @@ SessionCookieName session path=/
 AuthFormProvider file
 AuthUserFile "conf/passwd"
 AuthType form
-AuthName realm
+AuthName "realm"
 #...</pre>
 </div>
 
@@ -464,6 +465,46 @@ ignorée</td></tr>
     avec cet attribut. En effet, cette directive ne définit pas
     l'attribut <var>chemin</var>, qui doit être configuré
     séparément.</p></div>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="sessionexpiryupdateinterval" id="sessionexpiryupdateinterval">Directive</a> <a name="SessionExpiryUpdateInterval" id="SessionExpiryUpdateInterval">SessionExpiryUpdateInterval</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Définit le nombre de secondes dont la durée d'expiration d'une
+session peut changer sans que cette session soit mise à jour</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntaxe:</a></th><td><code>SessionExpiryUpdateInterval <var>interval</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Défaut:</a></th><td><code>SessionExpiryUpdateInterval 0 (mise à jour systématique)</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Contexte:</a></th><td>configuration globale, serveur virtuel, répertoire, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Status">Statut:</a></th><td>Extension</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_session</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">Compatibilité:</a></th><td>Disponible à partir de la version 2.4.41 du serveur HTTP Apache</td></tr>
+</table>
+    <p>La directive <code class="directive">SessionExpiryUpdateInterval</code>
+    permet d'éviter le coût de l'écriture d'une session pour chaque
+    requête en n'effectuant cette mise à jour que lorsque la date
+    d'expiration a changé. Ceci permet d'améliorer les performances d'un
+    site web ou de réduire la charge d'une base de données lorsqu'on
+    utilise <code class="module"><a href="../mod/mod_session_dbd.html">mod_session_dbd</a></code>. La session est
+    systématiquement mise à jour si les données stockées dans la session
+    ont été modifiées ou si la durée d'expiration a été modifiée d'une
+    durée supérieure à l'intervalle spécifié.</p>
+
+    <p>Définir l'intervalle à 0 désactive cette directive, et
+    l'expiration de la session sera alors rafraîchie pour chaque requête.</p>
+
+    <p>Cette directive n'a d'effet que si on l'utilise en combinaison
+    avec la directive <code class="directive"><a href="#sessionmaxage">SessionMaxAge</a></code> qui active
+    l'expiration des sessions. Les sessions sans date d'expiration ne
+    sont écrites que lorsque les données qu'elles renferment ont été
+    modifiées.</p>
+
+    <div class="warning"><h3>Avertissement</h3>
+    <p>Comme l'expiration de la session n'est pas systématiquement
+    rafraîchie à chaque requête, une session peut arriver à expiration
+    plus tôt d'un nombre de secondes spécifié dans le paramètre
+    <var>interval</var>. Définir un petit intervalle est en général
+    assez sur, mais en revenche n'a qu'un effet minime sur la prise en
+    compte des durées d'expiration.</p></div>
 
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>

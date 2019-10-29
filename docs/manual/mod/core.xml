@@ -4061,7 +4061,7 @@ Protocols h2 http/1.1
     <name>RegexDefaultOptions</name>
     <description>Allow to configure global/default options for regexes</description>
     <syntax>RegexDefaultOptions [none] [+|-]<var>option</var> [[+|-]<var>option</var>] ...</syntax>
-    <default>RegexDefaultOptions DOLLAR_ENDONLY</default>
+    <default>RegexDefaultOptions DOTALL DOLLAR_ENDONLY</default>
     <contextlist><context>server config</context></contextlist>
     <compatibility>Only available from Apache 2.4.30 and later.</compatibility>
     
@@ -4080,24 +4080,26 @@ Protocols h2 http/1.1
             <dt><code>ICASE</code></dt>
             <dd>Use a case-insensitive match.</dd>
 
+            <dt><code>EXTENDED</code></dt>
+            <dd>Perl's /x flag, ignore (unescaped-)spaces and comments in the pattern.</dd>
+
             <dt><code>DOTALL</code></dt>
-            <dd>Perl's /s flag.</dd>
+            <dd>Perl's /s flag, '.' matches newline characters.</dd>
 
             <dt><code>DOLLAR_ENDONLY</code></dt>
             <dd>'$' matches at end of subject string only.</dd>
-            <dd>.</dd>
         </dl>
         <highlight language="config">
-# 
-RegexDefaultOptions +ICASE +DOLLAR_ENDONLY
+# Add the ICASE option for all regexes by default
+RegexDefaultOptions +ICASE
 ...
-# Remove the ICASE option, but keep all the other already set options
-RegexDefaultOptions -ICASE
+# Remove the default DOLLAR_ENDONLY option, but keep any other one
+RegexDefaultOptions -DOLLAR_ENDONLY
 ...
-# Set the default option to DOTALL, resetting any other option
+# Set the DOTALL option only, resetting any other one
 RegexDefaultOptions DOTALL
 ...
-# Reset all defined option
+# Reset all defined options
 RegexDefaultOptions none
 ...
         </highlight>
@@ -4264,8 +4266,8 @@ scripts</description>
     so.</p>
     </note>
 
-    <p>The option <code>Registry-Strict</code> which is new in Apache HTTP Server
-    2.0 does the same thing as <code>Registry</code> but uses only the
+    <p>The option <code>Registry-Strict</code>
+    does the same thing as <code>Registry</code> but uses only the
     subkey <code>Shell\ExecCGI\Command</code>. The
     <code>ExecCGI</code> key is not a common one. It must be
     configured manually in the windows registry and hence prevents
@@ -4546,9 +4548,8 @@ ServerRoot "/home/httpd"
     actually produced a returned error message.</p>
 
     <p>The <code>Off</code>
-    setting, which is the default, suppresses the footer line (and is
-    therefore compatible with the behavior of Apache-1.2 and
-    below). The <code>On</code> setting simply adds a line with the
+    setting, which is the default, suppresses the footer line.
+    The <code>On</code> setting simply adds a line with the
     server version number and <directive
     module="core">ServerName</directive> of the serving virtual host,
     and the <code>EMail</code> setting additionally creates a
@@ -4556,7 +4557,7 @@ ServerRoot "/home/httpd"
     module="core">ServerAdmin</directive> of the referenced
     document.</p>
 
-    <p>After version 2.0.44, the details of the server version number
+    <p>The details of the server version number
     presented are controlled by the <directive
     module="core">ServerTokens</directive> directive.</p>
 </usage>
@@ -4613,7 +4614,7 @@ header</description>
     <p>This setting applies to the entire server, and cannot be
     enabled or disabled on a virtualhost-by-virtualhost basis.</p>
 
-    <p>After version 2.0.44, this directive also controls the
+    <p>This directive also controls the
     information presented by the <directive
     module="core">ServerSignature</directive> directive.</p>
 
@@ -5098,21 +5099,21 @@ hostname or IP address</description>
 <name>QualifyRedirectURL</name>
 <description>Controls whether the REDIRECT_URL environment variable is
              fully qualified</description>
-<syntax>QualifyRedirectURL ON|OFF</syntax>
-<default>QualifyRedirectURL OFF</default>
+<syntax>QualifyRedirectURL On|Off</syntax>
+<default>QualifyRedirectURL Off</default>
 <contextlist><context>server config</context><context>virtual host</context>
 <context>directory</context>
 </contextlist>
 <override>FileInfo</override>
 <compatibility>Directive supported in 2.4.18 and later. 2.4.17 acted
-as if 'QualifyRedirectURL ON' was configured.</compatibility>
+as if 'QualifyRedirectURL On' was configured.</compatibility>
 
 <usage>
     <p>This directive controls whether the server will ensure that the 
     REDIRECT_URL environment variable is fully qualified.  By default, 
     the variable contains the verbatim URL requested by the client, 
-    such as "/index.html".  With <directive module="core"
-    >QualifyRedirectURL ON</directive>, the same request would result in a
+    such as "/index.html".  With <directive
+    >QualifyRedirectURL On</directive>, the same request would result in a
     value such as "http://www.example.com/index.html".</p>
     <p>Even without this directive set, when a request is issued against a 
     fully qualified URL, REDIRECT_URL will remain fully qualified.

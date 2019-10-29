@@ -525,7 +525,10 @@
  * 20120211.83 (2.4.35-dev) Add client64 field to worker_score struct
  * 20120211.84 (2.4.35-dev) Add ap_no2slash_ex() and merge_slashes to 
  *                          core_server_conf.
- *
+ * 20120211.85 (2.4.40-dev) add ap_set_conn_count().
+ * 20120211.86 (2.4.40-dev) Add forward_100_continue{,_set} to proxy_dir_conf
+ * 20120211.87 (2.4.40-dev) Add dav_popen_propdb
+ * 20120211.88 (2.4.40-dev) Add ap_dir_nofnmatch() and ap_dir_fnmatch().
  */
 
 #define MODULE_MAGIC_COOKIE 0x41503234UL /* "AP24" */
@@ -533,7 +536,7 @@
 #ifndef MODULE_MAGIC_NUMBER_MAJOR
 #define MODULE_MAGIC_NUMBER_MAJOR 20120211
 #endif
-#define MODULE_MAGIC_NUMBER_MINOR 84                  /* 0...n */
+#define MODULE_MAGIC_NUMBER_MINOR 88                  /* 0...n */
 
 /**
  * Determine if the server's current MODULE_MAGIC_NUMBER is at least a
