@@ -17,7 +17,7 @@ Name: httpd
 Version: 2.4.41
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
-#Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/httpd-%{version}-%{release}.tar.gz
+Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name}-%{version}.tar.gz
 #Source1: index.html
 #Source2: httpd.logrotate
 #Source3: instance.conf
