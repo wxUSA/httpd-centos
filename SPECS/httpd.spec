@@ -83,7 +83,7 @@ Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
 Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
 #Patch60: httpd-2.4.34-enable-sslv3.patch
-Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.41-r1865749.patch
+#Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.41-r1865749.patch
 
 # Security fixes
 
@@ -235,7 +235,7 @@ interface for storing and accessing per-user session data.
 
 %patch58 -p1 -b .r1738878
 #%patch60 -p1 -b .enable-sslv3
-%patch61 -p1 -b .r1865749
+#%patch61 -p1 -b .r1865749
 
 # Patch in the vendor string
 sed -i '/^#define PLATFORM/s/Unix/%{vstring}/' os/unix/os.h
