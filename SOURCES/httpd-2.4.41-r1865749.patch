@@ -1,0 +1,14 @@
+# ./pullrev.sh 1865749
+http://svn.apache.org/viewvc?view=revision&revision=1865749
+
+--- httpd-2.4.41/modules/proxy/mod_proxy_balancer.c.r1865749
++++ httpd-2.4.41/modules/proxy/mod_proxy_balancer.c
+@@ -1104,7 +1104,7 @@
+     if (apr_uri_parse(r->pool, ref, &uri) || !uri.hostname)
+         return 0;
+ 
+-    return strcmp(uri.hostname, ap_get_server_name(r)) == 0;
++    return strcasecmp(uri.hostname, ap_get_server_name(r)) == 0;
+ }
+ 
+ /* Manages the loadfactors and member status
