@@ -209,7 +209,7 @@ The mod_session module and associated backends provide an abstract
 interface for storing and accessing per-user session data.
 
 %prep
-%setup -n %{gitrepo}-%{gitbranch} -q
+%setup -q
 %patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
