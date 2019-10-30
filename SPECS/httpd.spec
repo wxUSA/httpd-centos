@@ -17,7 +17,7 @@ Name: httpd
 Version: 2.4.41
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
-Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/httpd-%{version}-%{release}.tar.gz
+#Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/httpd-%{version}-%{release}.tar.gz
 #Source1: index.html
 #Source2: httpd.logrotate
 #Source3: instance.conf
@@ -746,6 +746,9 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Tue Oct 29 2019 Wesley Haines <wes@weatherusa.net> - 2.4.41-1-el7
+- Rebuilt for RHEL/CentOS 7
+
 * Thu Oct  3 2019 Joe Orton <jorton@redhat.com> - 2.4.41-5
 - mod_proxy_balancer: fix balancer-manager XSRF check (PR 63688)
 
@@ -792,6 +795,7 @@ exit $rv
 
 * Thu May 02 2019 Lubos Uhliarik <luhliari@redhat.com> - 2.4.39-4
 - httpd dependency on initscripts is unspecified (#1705188)
+
 * Tue Apr 23 2019 Wesley Haines <wes@weatherusa.net> - 2.4.39-1-el7
 - Rebuilt for RHEL/CentOS 7
 
