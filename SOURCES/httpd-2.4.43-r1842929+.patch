@@ -147,6 +147,7 @@ index 3db9d61..79b2a82 100644
      ap_server_config_defines = saved_server_config_defines;
      saved_server_config_defines = NULL;
      server_config_defined_vars = NULL;
+     ap_runtime_dir = NULL;
 -    return OK;
 +    core_state_dir = NULL;
 +
