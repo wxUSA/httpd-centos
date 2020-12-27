@@ -124,10 +124,10 @@ index addfd7e..2389f8f 100644
                               APR_HOOK_MIDDLE);
      dav_hook_find_liveprop(dav_fs_find_liveprop, NULL, NULL, APR_HOOK_MIDDLE);
 diff --git a/server/core.c b/server/core.c
-index 3db9d61..79b2a82 100644
+index 6c4bccf3b2..990cf61d42 100644
 --- a/server/core.c
 +++ b/server/core.c
-@@ -129,6 +129,8 @@ AP_DECLARE_DATA int ap_main_state = AP_SQ_MS_INITIAL_STARTUP;
+@@ -133,6 +133,8 @@ AP_DECLARE_DATA int ap_main_state = AP_SQ_MS_INITIAL_STARTUP;
  AP_DECLARE_DATA int ap_run_mode = AP_SQ_RM_UNKNOWN;
  AP_DECLARE_DATA int ap_config_generation = 0;
  
@@ -136,7 +136,7 @@ index 3db9d61..79b2a82 100644
  static void *create_core_dir_config(apr_pool_t *a, char *dir)
  {
      core_dir_config *conf;
-@@ -1409,12 +1411,15 @@ AP_DECLARE(const char *) ap_resolve_env(apr_pool_t *p, const char * word)
+@@ -1413,13 +1415,16 @@ AP_DECLARE(const char *) ap_resolve_env(apr_pool_t *p, const char * word)
      return res_buf;
  }
  

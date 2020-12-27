@@ -55,6 +55,7 @@ Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name
 #Source43: httpd-ssl-gencerts
 #Source44: httpd@.service
 # build/scripts patches
+Patch1: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.35-apachectl.patch
 Patch2: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-apxs.patch
 Patch3: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-deplibs.patch
 # Needed for socket activation and mod_systemd patch
@@ -92,7 +93,7 @@ License: ASL 2.0
 Group: System Environment/Daemons
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: gcc, autoconf, automake, pkgconfig, findutils, xmlto
-BuildRequires: perl-interpreter, perl-generators, systemd-devel
+BuildRequires: perl-interpreter, perl-generators, systemd-devel, brotli-devel
 BuildRequires: zlib-devel, libselinux-devel, lua-devel
 BuildRequires: apr-devel >= 1.5.0, apr-util-devel >= 1.5.0, pcre-devel >= 5.0
 BuildRequires: epel-release >= 7
@@ -211,6 +212,7 @@ interface for storing and accessing per-user session data.
 
 %prep
 %setup -q
+%patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
 
@@ -261,6 +263,9 @@ if test "x${vmmn}" != "x%{mmn}"; then
    : Update the mmn macro and rebuild.
    exit 1
 fi
+
+# Provide default layout
+#cp $SOURCES/config.layout .
 
 sed '
 s,@MPM@,%{mpm},g
@@ -318,6 +323,7 @@ export LYNX_PATH=/usr/bin/links
         --with-suexec-syslog \
         --with-suexec-bin=%{_sbindir}/suexec \
         --with-suexec-uidmin=1000 --with-suexec-gidmin=1000 \
+        --with-brotli \
         --enable-pie \
         --with-pcre \
         --enable-mods-shared=all \
