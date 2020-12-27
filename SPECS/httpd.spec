@@ -66,7 +66,7 @@ Patch22: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-export.patch
 Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-corelimit.patch
 Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-selinux.patch
-Patch26: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-gettid.patch
+#Patch26: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-gettid.patch
 Patch27: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-icons.patch
 Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-cachehardmax.patch
 #Patch31: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslmultiproxy.patch
@@ -85,7 +85,6 @@ Patch44: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 # Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
 #Patch60: httpd-2.4.34-enable-sslv3.patch
 #Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.41-r1865749.patch
-Patch62: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1870095+.patch
 
 # Security fixes
 
@@ -223,7 +222,7 @@ interface for storing and accessing per-user session data.
 %patch23 -p1 -b .export
 %patch24 -p1 -b .corelimit
 %patch25 -p1 -b .selinux
-%patch26 -p1 -b .gettid
+#%patch26 -p1 -b .gettid
 %patch27 -p1 -b .icons
 %patch30 -p1 -b .cachehardmax
 #patch31 -p1 -b .sslmultiproxy
@@ -237,7 +236,6 @@ interface for storing and accessing per-user session data.
 %patch44 -p1 -b .luaresume
 
 #%patch60 -p1 -b .enable-sslv3
-%patch62 -p1 -b .r1870095
 
 # Patch in the vendor string
 sed -i '/^#define PLATFORM/s/Unix/%{vstring}/' os/unix/os.h
