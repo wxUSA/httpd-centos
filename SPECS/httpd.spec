@@ -14,7 +14,7 @@
 
 Summary: Apache HTTP Server
 Name: httpd
-Version: 2.4.41
+Version: 2.4.46
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
 Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name}-%{version}.tar.gz
@@ -55,35 +55,36 @@ Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name
 #Source43: httpd-ssl-gencerts
 #Source44: httpd@.service
 # build/scripts patches
-Patch1: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.1-apctl.patch
-Patch2: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.9-apxs.patch
-Patch3: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.1-deplibs.patch
-Patch6: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.3-apctl-systemd.patch
+Patch2: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-apxs.patch
+Patch3: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-deplibs.patch
 # Needed for socket activation and mod_systemd patch
-Patch19: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-detect-systemd.patch
+Patch19: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-detect-systemd.patch
 # Features/functional changes
-Patch21: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.39-r1842929+.patch
-Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.39-export.patch
-Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.1-corelimit.patch
-Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-selinux.patch
-Patch27: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.2-icons.patch
-Patch29: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-systemd.patch
-Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.4-cachehardmax.patch
-Patch31: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.33-sslmultiproxy.patch
-Patch34: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.17-socket-activation.patch
-#Patch36: httpd-2.4.33-r1830819+.patch
-Patch38: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-sslciphdefault.patch
-#Patch39: httpd-2.4.37-sslprotdefault.patch
-Patch40: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.39-r1861269.patch
-Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.37-r1861793+.patch
-#Patch42: httpd-2.4.41-r1828172+.patch
+Patch21: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1842929+.patch
+Patch22: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-mod_systemd.patch
+Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-export.patch
+Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-corelimit.patch
+Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-selinux.patch
+Patch26: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-gettid.patch
+Patch27: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-icons.patch
+Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-cachehardmax.patch
+#Patch31: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslmultiproxy.patch
+Patch34: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-socket-activation.patch
+Patch38: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslciphdefault.patch
+#Patch39: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslprotdefault.patch
+Patch40: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861269.patch
+Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861793+.patch
+#Patch42: httpd-2.4.43-r1828172+.patch
+Patch43: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslcoalesce.patch
+Patch44: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.46-lua-resume.patch
 
 # Bug fixes
 # Patch50: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-fallbackresource.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
-Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
+# Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
 #Patch60: httpd-2.4.34-enable-sslv3.patch
 #Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.41-r1865749.patch
+Patch62: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1870095+.patch
 
 # Security fixes
 
@@ -210,32 +211,31 @@ interface for storing and accessing per-user session data.
 
 %prep
 %setup -q
-%patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
-%patch6 -p1 -b .apctlsystemd
 
 %patch19 -p1 -b .detectsystemd
 
 %patch21 -p1 -b .r1842929+
+%patch22 -p1 -b .mod_systemd
 %patch23 -p1 -b .export
 %patch24 -p1 -b .corelimit
 %patch25 -p1 -b .selinux
+%patch26 -p1 -b .gettid
 %patch27 -p1 -b .icons
-%patch29 -p1 -b .systemd
 %patch30 -p1 -b .cachehardmax
 #patch31 -p1 -b .sslmultiproxy
 %patch34 -p1 -b .socketactivation
-#%patch36 -p1 -b .r1830819+
 %patch38 -p1 -b .sslciphdefault
 #%patch39 -p1 -b .sslprotdefault
 %patch40 -p1 -b .r1861269
 %patch41 -p1 -b .r1861793+
 #%patch42 -p1 -b .r1828172+
+%patch43 -p1 -b .sslcoalesce
+%patch44 -p1 -b .luaresume
 
-%patch58 -p1 -b .r1738878
 #%patch60 -p1 -b .enable-sslv3
-#%patch61 -p1 -b .r1865749
+%patch62 -p1 -b .r1870095
 
 # Patch in the vendor string
 sed -i '/^#define PLATFORM/s/Unix/%{vstring}/' os/unix/os.h
@@ -329,6 +329,7 @@ export LYNX_PATH=/usr/bin/links
         --enable-cgid --enable-cgi \
         --enable-cgid-fdpassing \
         --enable-authn-anon --enable-authn-alias \
+        --enable-systemd \
         --disable-imagemap --disable-file-cache \
         --disable-http2 \
         --disable-md \
@@ -548,17 +549,6 @@ exit 0
 %postun
 %systemd_postun httpd.service htcacheclean.service httpd.socket
 
-# Trigger for conversion from SysV, per guidelines at:
-# https://fedoraproject.org/wiki/Packaging:ScriptletSnippets#Systemd
-%triggerun -- httpd < 2.2.21-5
-# Save the current service runlevel info
-# User must manually run systemd-sysv-convert --apply httpd
-# to migrate them to systemd targets
-/usr/bin/systemd-sysv-convert --save httpd.service >/dev/null 2>&1 ||:
-
-# Run these because the SysV package being removed won't do them
-/sbin/chkconfig --del httpd >/dev/null 2>&1 || :
-
 %posttrans
 test -f /etc/sysconfig/httpd-disable-posttrans || \
   /bin/systemctl try-restart --no-block httpd.service htcacheclean.service >/dev/null 2>&1 || :
@@ -639,7 +629,6 @@ exit $rv
 %exclude %{_sysconfdir}/httpd/conf.modules.d/01-session.conf
 
 %config(noreplace) %{_sysconfdir}/sysconfig/htcacheclean
-%ghost %{_sysconfdir}/sysconfig/httpd
 %{_prefix}/lib/tmpfiles.d/httpd.conf
 
 %dir %{_libexecdir}/initscripts/legacy-actions/httpd
@@ -746,8 +735,62 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Sun Dec 27 2020 Wesley Haines <wes@weatherusa.net> - 2.4.46-1-el7
+- Rebuilt for RHEL/CentOS 7
+
+* Tue Aug 25 2020 Lubos Uhliarik <luhliari@redhat.com> - 2.4.46-1
+- new version 2.4.46
+- remove obsolete parts of this spec file
+- fix systemd detection patch
+
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2.4.43-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
+* Thu Jul 09 2020 Lubos Uhliarik <luhliari@redhat.com> - 2.4.43-6
+- fix macro in mod_lua for lua 4.5
+
+* Thu Jul 09 2020 Lubos Uhliarik <luhliari@redhat.com> - 2.4.43-5
+- Remove %ghosted /etc/sysconfig/httpd file (#1850082)
+
+* Tue Jul  7 2020 Joe Orton <jorton@redhat.com> - 2.4.43-4
+- use gettid() directly and use it for built-in ErrorLogFormat
+
+* Fri Apr 17 2020 Joe Orton <jorton@redhat.com> - 2.4.43-3
+- mod_ssl: updated coalescing filter to improve TLS efficiency
+
+* Fri Apr 17 2020 Joe Orton <jorton@redhat.com> - 2.4.43-2
+- mod_ssl: fix leak in OCSP stapling code (PR 63687, r1876548)
+- mod_systemd: restore descriptive startup logging
+
+* Tue Mar 31 2020 Lubos Uhliarik <luhliari@redhat.com> - 2.4.43-1
+- new version 2.4.43 (#1819023)
+
+* Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2.4.41-13
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
+* Mon Jan 20 2020 Joe Orton <jorton@redhat.com> - 2.4.41-12
+- mod_systemd: fix timeouts on reload w/ExtendedStatus off (#1590877)
+
+* Mon Jan  6 2020 Joe Orton <jorton@redhat.com> - 2.4.41-11
+- apachectl(8): update authors
+
+* Sat Dec  7 2019 FeRD (Frank Dana) <ferdnyc@gmail.com> - 2.4.41-10
+- apachectl: Add man page for Fedora version
+
+* Thu Nov 21 2019 Joe Orton <jorton@redhat.com> - 2.4.41-9
+- mod_ssl: fix request body buffering w/TLSv1.3 PHA (#1775146)
+
+* Wed Nov 13 2019 Joe Orton <jorton@redhat.com> - 2.4.41-8
+- apachectl: in graceful/graceful-stop, only signal main process (#1758798)
+
+* Mon Nov 11 2019 Lubos Uhliarik <luhliari@redhat.com> - 2.4.41-7
+- add automatic source tarball signature verification in %prep section
+
 * Tue Oct 29 2019 Wesley Haines <wes@weatherusa.net> - 2.4.41-1-el7
 - Rebuilt for RHEL/CentOS 7
+
+* Fri Oct  4 2019 Joe Orton <jorton@redhat.com> - 2.4.41-6
+- mod_cgid/mod_cgi: further upstream consolidation patches
 
 * Thu Oct  3 2019 Joe Orton <jorton@redhat.com> - 2.4.41-5
 - mod_proxy_balancer: fix balancer-manager XSRF check (PR 63688)

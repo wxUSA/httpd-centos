@@ -1,39 +1,30 @@
-From ce2d1d7d4b2bebe34cf37fdeb30d35050092c5b5 Mon Sep 17 00:00:00 2001
-From: Rob Crittenden <rcrit@cow.greyoak.com>
-Date: Thu, 12 Apr 2018 14:36:28 -0400
-Subject: [PATCH] httpd-2.4.18-sslmultiproxy.patch
-
----
- modules/ssl/mod_ssl.c         | 24 ++++++++++++++++++++++--
- modules/ssl/ssl_engine_vars.c | 18 +++++++++++++++++-
- 2 files changed, 39 insertions(+), 3 deletions(-)
-
 diff --git a/modules/ssl/mod_ssl.c b/modules/ssl/mod_ssl.c
-index 48d64cb..42e85a3 100644
-diff -uap httpd-2.4.33/modules/ssl/mod_ssl.c.sslmultiproxy httpd-2.4.33/modules/ssl/mod_ssl.c
---- httpd-2.4.33/modules/ssl/mod_ssl.c.sslmultiproxy
-+++ httpd-2.4.33/modules/ssl/mod_ssl.c
-@@ -444,12 +444,19 @@
+index 12617b2..0fe7464 100644
+--- a/modules/ssl/mod_ssl.c
++++ b/modules/ssl/mod_ssl.c
+@@ -459,6 +459,10 @@ static int ssl_hook_pre_config(apr_pool_t *pconf,
      return OK;
  }
  
 +static APR_OPTIONAL_FN_TYPE(ssl_engine_disable) *othermod_engine_disable;
 +static APR_OPTIONAL_FN_TYPE(ssl_engine_set) *othermod_engine_set;
 +
++
  static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
-                                            ap_conf_vector_t *per_dir_config)
- {
+                                            ap_conf_vector_t *per_dir_config,
+                                            int new_proxy)
+@@ -466,6 +470,10 @@ static SSLConnRec *ssl_init_connection_ctx(conn_rec *c,
      SSLConnRec *sslconn = myConnConfig(c);
-     SSLSrvConfigRec *sc;
+     int need_setup = 0;
  
 +    if (othermod_engine_disable) {
 +        othermod_engine_disable(c);
 +    }
 +
-     if (sslconn) {
-         return sslconn;
-     }
-@@ -508,6 +515,10 @@
+     /* mod_proxy's (r->)per_dir_config has the lifetime of the request, thus
+      * it uses ssl_engine_set() to reset sslconn->dc when reusing SSL backend
+      * connections, so we must fall through here. But in the case where we are
+@@ -544,6 +552,10 @@ static int ssl_engine_set(conn_rec *c,
  {
      SSLConnRec *sslconn;
      int status;
@@ -43,8 +34,8 @@ diff -uap httpd-2.4.33/modules/ssl/mod_ssl.c.sslmultiproxy httpd-2.4.33/modules/
 +    }
      
      if (proxy) {
-         sslconn = ssl_init_connection_ctx(c, per_dir_config);
-@@ -537,12 +548,18 @@
+         sslconn = ssl_init_connection_ctx(c, per_dir_config, 1);
+@@ -572,12 +584,18 @@ static int ssl_engine_set(conn_rec *c,
  
  static int ssl_proxy_enable(conn_rec *c)
  {
@@ -65,7 +56,7 @@ diff -uap httpd-2.4.33/modules/ssl/mod_ssl.c.sslmultiproxy httpd-2.4.33/modules/
  }
  
  int ssl_init_ssl_connection(conn_rec *c, request_rec *r)
-@@ -730,6 +747,9 @@
+@@ -753,6 +771,9 @@ static void ssl_register_hooks(apr_pool_t *p)
                        APR_HOOK_MIDDLE);
  
      ssl_var_register(p);
@@ -75,10 +66,11 @@ diff -uap httpd-2.4.33/modules/ssl/mod_ssl.c.sslmultiproxy httpd-2.4.33/modules/
  
      APR_REGISTER_OPTIONAL_FN(ssl_proxy_enable);
      APR_REGISTER_OPTIONAL_FN(ssl_engine_disable);
-diff -uap httpd-2.4.33/modules/ssl/ssl_engine_vars.c.sslmultiproxy httpd-2.4.33/modules/ssl/ssl_engine_vars.c
---- httpd-2.4.33/modules/ssl/ssl_engine_vars.c.sslmultiproxy
-+++ httpd-2.4.33/modules/ssl/ssl_engine_vars.c
-@@ -54,6 +54,8 @@
+diff --git a/modules/ssl/ssl_engine_vars.c b/modules/ssl/ssl_engine_vars.c
+index 5724f18..81c56ba 100644
+--- a/modules/ssl/ssl_engine_vars.c
++++ b/modules/ssl/ssl_engine_vars.c
+@@ -54,6 +54,8 @@ static char *ssl_var_lookup_ssl_cipher(apr_pool_t *p, SSLConnRec *sslconn, char
  static void  ssl_var_lookup_ssl_cipher_bits(SSL *ssl, int *usekeysize, int *algkeysize);
  static char *ssl_var_lookup_ssl_version(apr_pool_t *p, char *var);
  static char *ssl_var_lookup_ssl_compress_meth(SSL *ssl);
@@ -87,7 +79,7 @@ diff -uap httpd-2.4.33/modules/ssl/ssl_engine_vars.c.sslmultiproxy httpd-2.4.33/
  
  static SSLConnRec *ssl_get_effective_config(conn_rec *c)
  {
-@@ -68,7 +70,9 @@
+@@ -68,7 +70,9 @@ static SSLConnRec *ssl_get_effective_config(conn_rec *c)
  static int ssl_is_https(conn_rec *c)
  {
      SSLConnRec *sslconn = ssl_get_effective_config(c);
@@ -98,7 +90,7 @@ diff -uap httpd-2.4.33/modules/ssl/ssl_engine_vars.c.sslmultiproxy httpd-2.4.33/
  }
  
  static const char var_interface[] = "mod_ssl/" AP_SERVER_BASEREVISION;
-@@ -137,6 +141,9 @@
+@@ -137,6 +141,9 @@ void ssl_var_register(apr_pool_t *p)
  {
      char *cp, *cp2;
  
@@ -108,7 +100,7 @@ diff -uap httpd-2.4.33/modules/ssl/ssl_engine_vars.c.sslmultiproxy httpd-2.4.33/
      APR_REGISTER_OPTIONAL_FN(ssl_is_https);
      APR_REGISTER_OPTIONAL_FN(ssl_var_lookup);
      APR_REGISTER_OPTIONAL_FN(ssl_ext_list);
-@@ -271,6 +278,15 @@
+@@ -271,6 +278,15 @@ char *ssl_var_lookup(apr_pool_t *p, server_rec *s, conn_rec *c, request_rec *r,
       */
      if (result == NULL && c != NULL) {
          SSLConnRec *sslconn = ssl_get_effective_config(c);

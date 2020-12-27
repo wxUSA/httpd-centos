@@ -1,13 +1,20 @@
-# ./pullrev.sh 1842929 1842931 1852982 1853631 1857731
-http://svn.apache.org/viewvc?view=revision&revision=1842929
-http://svn.apache.org/viewvc?view=revision&revision=1842931
-http://svn.apache.org/viewvc?view=revision&revision=1852982
-http://svn.apache.org/viewvc?view=revision&revision=1857731
-http://svn.apache.org/viewvc?view=revision&revision=1853631
-
---- httpd-2.4.39/acinclude.m4.r1842929+
-+++ httpd-2.4.39/acinclude.m4
-@@ -45,6 +45,7 @@
+diff --git a/Makefile.in b/Makefile.in
+index 06b8c5a..9eeb5c7 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -213,6 +213,7 @@ install-cgi:
+ install-other:
+ 	@test -d $(DESTDIR)$(logfiledir) || $(MKINSTALLDIRS) $(DESTDIR)$(logfiledir)
+ 	@test -d $(DESTDIR)$(runtimedir) || $(MKINSTALLDIRS) $(DESTDIR)$(runtimedir)
++	@test -d $(DESTDIR)$(statedir) || $(MKINSTALLDIRS) $(DESTDIR)$(statedir)
+ 	@for ext in dll x; do \
+ 		file=apachecore.$$ext; \
+ 		if test -f $$file; then \
+diff --git a/acinclude.m4 b/acinclude.m4
+index 95232f5..5d9d669 100644
+--- a/acinclude.m4
++++ b/acinclude.m4
+@@ -45,6 +45,7 @@ AC_DEFUN([APACHE_GEN_CONFIG_VARS],[
    APACHE_SUBST(installbuilddir)
    APACHE_SUBST(runtimedir)
    APACHE_SUBST(proxycachedir)
@@ -15,7 +22,7 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
    APACHE_SUBST(other_targets)
    APACHE_SUBST(progname)
    APACHE_SUBST(prefix)
-@@ -663,6 +664,7 @@
+@@ -688,6 +689,7 @@ AC_DEFUN([APACHE_EXPORT_ARGUMENTS],[
    APACHE_SUBST_EXPANDED_ARG(runtimedir)
    APACHE_SUBST_EXPANDED_ARG(logfiledir)
    APACHE_SUBST_EXPANDED_ARG(proxycachedir)
@@ -23,9 +30,11 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  ])
  
  dnl 
---- httpd-2.4.39/configure.in.r1842929+
-+++ httpd-2.4.39/configure.in
-@@ -41,7 +41,7 @@
+diff --git a/configure.in b/configure.in
+index a63eada..c8f9aa2 100644
+--- a/configure.in
++++ b/configure.in
+@@ -41,7 +41,7 @@ dnl Something seems broken here.
  AC_PREFIX_DEFAULT(/usr/local/apache2)
  
  dnl Get the layout here, so we can pass the required variables to apr
@@ -34,8 +43,10 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  
  dnl reparse the configure arguments.
  APR_PARSE_ARGUMENTS
---- httpd-2.4.39/include/ap_config_layout.h.in.r1842929+
-+++ httpd-2.4.39/include/ap_config_layout.h.in
+diff --git a/include/ap_config_layout.h.in b/include/ap_config_layout.h.in
+index 2b4a70c..e076f41 100644
+--- a/include/ap_config_layout.h.in
++++ b/include/ap_config_layout.h.in
 @@ -60,5 +60,7 @@
  #define DEFAULT_REL_LOGFILEDIR "@rel_logfiledir@"
  #define DEFAULT_EXP_PROXYCACHEDIR "@exp_proxycachedir@"
@@ -44,9 +55,11 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
 +#define DEFAULT_REL_STATEDIR "@rel_statedir@"
  
  #endif /* AP_CONFIG_LAYOUT_H */
---- httpd-2.4.39/include/http_config.h.r1842929+
-+++ httpd-2.4.39/include/http_config.h
-@@ -757,6 +757,14 @@
+diff --git a/include/http_config.h b/include/http_config.h
+index f9c2d77..c229bc9 100644
+--- a/include/http_config.h
++++ b/include/http_config.h
+@@ -757,6 +757,14 @@ AP_DECLARE(char *) ap_server_root_relative(apr_pool_t *p, const char *fname);
   */
  AP_DECLARE(char *) ap_runtime_dir_relative(apr_pool_t *p, const char *fname);
  
@@ -61,19 +74,11 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  /* Finally, the hook for dynamically loading modules in... */
  
  /**
---- httpd-2.4.39/Makefile.in.r1842929+
-+++ httpd-2.4.39/Makefile.in
-@@ -213,6 +213,7 @@
- install-other:
- 	@test -d $(DESTDIR)$(logfiledir) || $(MKINSTALLDIRS) $(DESTDIR)$(logfiledir)
- 	@test -d $(DESTDIR)$(runtimedir) || $(MKINSTALLDIRS) $(DESTDIR)$(runtimedir)
-+	@test -d $(DESTDIR)$(statedir) || $(MKINSTALLDIRS) $(DESTDIR)$(statedir)
- 	@for ext in dll x; do \
- 		file=apachecore.$$ext; \
- 		if test -f $$file; then \
---- httpd-2.4.39/modules/dav/fs/mod_dav_fs.c.r1842929+
-+++ httpd-2.4.39/modules/dav/fs/mod_dav_fs.c
-@@ -29,6 +29,10 @@
+diff --git a/modules/dav/fs/mod_dav_fs.c b/modules/dav/fs/mod_dav_fs.c
+index addfd7e..2389f8f 100644
+--- a/modules/dav/fs/mod_dav_fs.c
++++ b/modules/dav/fs/mod_dav_fs.c
+@@ -29,6 +29,10 @@ typedef struct {
  
  extern module AP_MODULE_DECLARE_DATA dav_fs_module;
  
@@ -84,7 +89,7 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  const char *dav_get_lockdb_path(const request_rec *r)
  {
      dav_fs_server_conf *conf;
-@@ -57,6 +61,24 @@
+@@ -57,6 +61,24 @@ static void *dav_fs_merge_server_config(apr_pool_t *p,
      return newconf;
  }
  
@@ -109,7 +114,7 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  /*
   * Command handler for the DAVLockDB directive, which is TAKE1
   */
-@@ -87,6 +109,8 @@
+@@ -87,6 +109,8 @@ static const command_rec dav_fs_cmds[] =
  
  static void register_hooks(apr_pool_t *p)
  {
@@ -118,9 +123,11 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
      dav_hook_gather_propsets(dav_fs_gather_propsets, NULL, NULL,
                               APR_HOOK_MIDDLE);
      dav_hook_find_liveprop(dav_fs_find_liveprop, NULL, NULL, APR_HOOK_MIDDLE);
---- httpd-2.4.39/server/core.c.r1842929+
-+++ httpd-2.4.39/server/core.c
-@@ -129,6 +129,8 @@
+diff --git a/server/core.c b/server/core.c
+index 3db9d61..79b2a82 100644
+--- a/server/core.c
++++ b/server/core.c
+@@ -129,6 +129,8 @@ AP_DECLARE_DATA int ap_main_state = AP_SQ_MS_INITIAL_STARTUP;
  AP_DECLARE_DATA int ap_run_mode = AP_SQ_RM_UNKNOWN;
  AP_DECLARE_DATA int ap_config_generation = 0;
  
@@ -129,7 +136,7 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  static void *create_core_dir_config(apr_pool_t *a, char *dir)
  {
      core_dir_config *conf;
-@@ -1409,12 +1411,15 @@
+@@ -1409,12 +1411,15 @@ AP_DECLARE(const char *) ap_resolve_env(apr_pool_t *p, const char * word)
      return res_buf;
  }
  
@@ -147,7 +154,7 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  }
  
  /*
-@@ -3113,6 +3118,24 @@
+@@ -3120,6 +3125,24 @@ static const char *set_runtime_dir(cmd_parms *cmd, void *dummy, const char *arg)
      return NULL;
  }
  
@@ -172,7 +179,7 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  static const char *set_timeout(cmd_parms *cmd, void *dummy, const char *arg)
  {
      const char *err = ap_check_cmd_context(cmd, NOT_IN_DIR_CONTEXT);
-@@ -4407,6 +4430,8 @@
+@@ -4414,6 +4437,8 @@ AP_INIT_TAKE1("ServerRoot", set_server_root, NULL, RSRC_CONF | EXEC_ON_READ,
    "Common directory of server-related files (logs, confs, etc.)"),
  AP_INIT_TAKE1("DefaultRuntimeDir", set_runtime_dir, NULL, RSRC_CONF | EXEC_ON_READ,
    "Common directory for run-time files (shared memory, locks, etc.)"),
@@ -181,7 +188,7 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
  AP_INIT_TAKE1("ErrorLog", set_server_string_slot,
    (void *)APR_OFFSETOF(server_rec, error_fname), RSRC_CONF,
    "The filename of the error log"),
-@@ -4934,8 +4959,7 @@
+@@ -4941,8 +4966,7 @@ static int core_pre_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptem
  
      if (!saved_server_config_defines)
          init_config_defines(pconf);
@@ -189,9 +196,9 @@ http://svn.apache.org/viewvc?view=revision&revision=1853631
 -                              apr_pool_cleanup_null);
 +    apr_pool_cleanup_register(pconf, NULL, reset_config, apr_pool_cleanup_null);
  
-     ap_regcomp_set_default_cflags(AP_REG_DOLLAR_ENDONLY);
+     ap_regcomp_set_default_cflags(AP_REG_DEFAULT);
  
-@@ -5163,6 +5187,27 @@
+@@ -5170,6 +5194,27 @@ AP_DECLARE(int) ap_state_query(int query)
      }
  }
  

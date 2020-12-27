@@ -5,9 +5,11 @@ to do so indirectly.
 
 Upstream: https://svn.apache.org/r1861685 (as new default-off configure option)
 
---- httpd-2.4.39/Makefile.in.export
-+++ httpd-2.4.39/Makefile.in
-@@ -4,8 +4,15 @@
+diff --git a/Makefile.in b/Makefile.in
+index 9eeb5c7..8746a10 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -4,8 +4,15 @@ CLEAN_SUBDIRS = test
  
  PROGRAM_NAME         = $(progname)
  PROGRAM_SOURCES      = modules.c
@@ -24,9 +26,24 @@ Upstream: https://svn.apache.org/r1861685 (as new default-off configure option)
  PROGRAM_DEPENDENCIES = \
    server/libmain.la \
    $(BUILTIN_LIBS) \
---- httpd-2.4.39/server/main.c.export
-+++ httpd-2.4.39/server/main.c
-@@ -835,17 +835,3 @@
+diff --git a/server/Makefile.in b/server/Makefile.in
+index 1fa3344..116850b 100644
+--- a/server/Makefile.in
++++ b/server/Makefile.in
+@@ -12,7 +12,7 @@ LTLIBRARY_SOURCES = \
+ 	connection.c listen.c util_mutex.c \
+ 	mpm_common.c mpm_unix.c mpm_fdqueue.c \
+ 	util_charset.c util_cookies.c util_debug.c util_xml.c \
+-	util_filter.c util_pcre.c util_regex.c exports.c \
++	util_filter.c util_pcre.c util_regex.c \
+ 	scoreboard.c error_bucket.c protocol.c core.c request.c provider.c \
+ 	eoc_bucket.c eor_bucket.c core_filters.c \
+ 	util_expr_parse.c util_expr_scan.c util_expr_eval.c
+diff --git a/server/main.c b/server/main.c
+index 62e06df..17c09ee 100644
+--- a/server/main.c
++++ b/server/main.c
+@@ -835,17 +835,3 @@ int main(int argc, const char * const argv[])
      return !OK;
  }
  
@@ -44,14 +61,3 @@ Upstream: https://svn.apache.org/r1861685 (as new default-off configure option)
 -    return ap_ugly_hack;
 -}
 -#endif
---- httpd-2.4.39/server/Makefile.in.export
-+++ httpd-2.4.39/server/Makefile.in
-@@ -12,7 +12,7 @@
- 	connection.c listen.c util_mutex.c \
- 	mpm_common.c mpm_unix.c mpm_fdqueue.c \
- 	util_charset.c util_cookies.c util_debug.c util_xml.c \
--	util_filter.c util_pcre.c util_regex.c exports.c \
-+	util_filter.c util_pcre.c util_regex.c \
- 	scoreboard.c error_bucket.c protocol.c core.c request.c provider.c \
- 	eoc_bucket.c eor_bucket.c core_filters.c \
- 	util_expr_parse.c util_expr_scan.c util_expr_eval.c

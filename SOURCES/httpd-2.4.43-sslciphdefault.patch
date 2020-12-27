@@ -1,11 +1,8 @@
-
-https://bugzilla.redhat.com/show_bug.cgi?id=1109119
-
-Don't prepend !aNULL etc if PROFILE= is used with SSLCipherSuite.
-
---- httpd-2.4.34/modules/ssl/ssl_engine_config.c.sslciphdefault
-+++ httpd-2.4.34/modules/ssl/ssl_engine_config.c
-@@ -774,9 +774,11 @@
+diff --git a/modules/ssl/ssl_engine_config.c b/modules/ssl/ssl_engine_config.c
+index 97778a8..27e7a53 100644
+--- a/modules/ssl/ssl_engine_config.c
++++ b/modules/ssl/ssl_engine_config.c
+@@ -778,9 +778,11 @@ const char *ssl_cmd_SSLCipherSuite(cmd_parms *cmd,
      }
      
      if (!strcmp("SSL", arg1)) {
@@ -19,7 +16,7 @@ Don't prepend !aNULL etc if PROFILE= is used with SSLCipherSuite.
              dc->szCipherSuite = arg2;
          }
          else {
-@@ -1540,8 +1542,10 @@
+@@ -1544,8 +1546,10 @@ const char *ssl_cmd_SSLProxyCipherSuite(cmd_parms *cmd,
      }
      
      if (!strcmp("SSL", arg1)) {
