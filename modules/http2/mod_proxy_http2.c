@@ -401,6 +401,14 @@ run_connect:
          */
         apr_table_setn(ctx->p_conn->connection->notes,
                        "proxy-request-alpn-protos", "h2");
+        if (ctx->p_conn->ssl_hostname) {
+            ap_log_cerror(APLOG_MARK, APLOG_TRACE1, 0, ctx->owner,
+                          "set SNI to %s for (%s)",
+                          ctx->p_conn->ssl_hostname,
+                          ctx->p_conn->hostname);
+            apr_table_setn(ctx->p_conn->connection->notes,
+                           "proxy-request-hostname", ctx->p_conn->ssl_hostname);
+        }
     }
 
     if (ctx->master->aborted) goto cleanup;
@@ -417,7 +425,7 @@ run_connect:
             ctx->p_conn = NULL;
         }
         ++reconnects;
-        if (reconnects < 5) {
+        if (reconnects < 2) {
             goto run_connect;
         } 
         ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->owner, APLOGNO(10023)

@@ -104,7 +104,7 @@ typedef struct {
 /*
  * Sun Jun  7 05:43:49 CEST 1998 -- Alvaro
  * More comments:
- * 1) The UUencoding prodecure is now done in a general way, avoiding the problems
+ * 1) The UUencoding procedure is now done in a general way, avoiding the problems
  * with sizes and paddings that can arise depending on the architecture. Now the
  * offsets and sizes of the elements of the unique_id_rec structure are calculated
  * in unique_id_global_init; and then used to duplicate the structure without the
@@ -172,17 +172,14 @@ static void unique_id_child_init(apr_pool_t *p, server_rec *s)
                              sizeof(cur_unique_id.counter));
 }
 
-/* NOTE: This is *NOT* the same encoding used by base64encode ... the last two
- * characters should be + and /.  But those two characters have very special
- * meanings in URLs, and we want to make it easy to use identifiers in
- * URLs.  So we replace them with @ and -.
- */
+/* Use the base64url encoding per RFC 4648, avoiding characters which
+ * are not safe in URLs.  ### TODO: can switch to apr_encode_*. */
 static const char uuencoder[64] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '@', '-',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_',
 };
 
 static const char *gen_unique_id(const request_rec *r)

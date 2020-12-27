@@ -1105,7 +1105,8 @@ static const char *process_item(request_rec *r, request_rec *orig,
 static void flush_log(buffered_log *buf)
 {
     if (buf->outcnt && buf->handle != NULL) {
-        apr_file_write(buf->handle, buf->outbuf, &buf->outcnt);
+        /* XXX: error handling */
+        apr_file_write_full(buf->handle, buf->outbuf, buf->outcnt, NULL);
         buf->outcnt = 0;
     }
 }
@@ -1171,11 +1172,9 @@ static int config_log_transaction(request_rec *r, config_log_state *cls,
 
     for (i = 0; i < format->nelts; ++i) {
         strs[i] = process_item(r, orig, &items[i]);
-    }
-
-    for (i = 0; i < format->nelts; ++i) {
         len += strl[i] = strlen(strs[i]);
     }
+
     if (!log_writer) {
         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(00645)
                 "log writer isn't correctly setup");
@@ -1716,7 +1715,7 @@ static apr_status_t ap_buffered_log_writer(request_rec *r,
             s += strl[i];
         }
         w = len;
-        rv = apr_file_write(buf->handle, str, &w);
+        rv = apr_file_write_full(buf->handle, str, w, NULL);
 
     }
     else {

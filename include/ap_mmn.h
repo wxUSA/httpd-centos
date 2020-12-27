@@ -529,6 +529,14 @@
  * 20120211.86 (2.4.40-dev) Add forward_100_continue{,_set} to proxy_dir_conf
  * 20120211.87 (2.4.40-dev) Add dav_popen_propdb
  * 20120211.88 (2.4.40-dev) Add ap_dir_nofnmatch() and ap_dir_fnmatch().
+ * 20120211.89 (2.4.42-dev) Add add dns_pool to proxy_conn_pool and define
+ *                          AP_VOLATILIZE_T.
+ * 20120211.90 (2.4.42-dev) AP_REG_DEFAULT macro in ap_regex.h
+ * 20120211.91 (2.4.42-dev) Add ap_is_chunked() in httpd.h
+ * 20120211.92 (2.4.42-dev) AP_REG_NO_DEFAULT macro in ap_regex.h
+ * 20120211.93 (2.4.44-dev) Add ap_parse_strict_length()
+ * 20120211.94 (2.4.47-dev) Add ap_proxy_define_match_worker()
+ * 20120211.95 (2.4.47-dev) Add proxy check_trans hook
  */
 
 #define MODULE_MAGIC_COOKIE 0x41503234UL /* "AP24" */
@@ -536,7 +544,7 @@
 #ifndef MODULE_MAGIC_NUMBER_MAJOR
 #define MODULE_MAGIC_NUMBER_MAJOR 20120211
 #endif
-#define MODULE_MAGIC_NUMBER_MINOR 88                  /* 0...n */
+#define MODULE_MAGIC_NUMBER_MINOR 95                  /* 0...n */
 
 /**
  * Determine if the server's current MODULE_MAGIC_NUMBER is at least a

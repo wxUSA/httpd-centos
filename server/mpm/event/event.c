@@ -505,7 +505,7 @@ static APR_INLINE apr_uint32_t listeners_disabled(void)
     return apr_atomic_read32(&listensocks_disabled);
 }
 
-static APR_INLINE int connections_above_limit(void)
+static APR_INLINE int connections_above_limit(int *busy)
 {
     apr_uint32_t i_count = ap_queue_info_num_idlers(worker_queue_info);
     if (i_count > 0) {
@@ -519,6 +519,9 @@ static APR_INLINE int connections_above_limit(void)
             return 0;
         }
     }
+    else if (busy) {
+        *busy = 1;
+    }
     return 1;
 }
 
@@ -526,21 +529,6 @@ static void abort_socket_nonblocking(apr_socket_t *csd)
 {
     apr_status_t rv;
     apr_socket_timeout_set(csd, 0);
-#if defined(SOL_SOCKET) && defined(SO_LINGER)
-    /* This socket is over now, and we don't want to block nor linger
-     * anymore, so reset it. A normal close could still linger in the
-     * system, while RST is fast, nonblocking, and what the peer will
-     * get if it sends us further data anyway.
-     */
-    {
-        apr_os_sock_t osd = -1;
-        struct linger opt;
-        opt.l_onoff = 1;
-        opt.l_linger = 0; /* zero timeout is RST */
-        apr_os_sock_get(&osd, csd);
-        setsockopt(osd, SOL_SOCKET, SO_LINGER, (void *)&opt, sizeof opt);
-    }
-#endif
     rv = apr_socket_close(csd);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, ap_server_conf, APLOGNO(00468)
@@ -771,7 +759,7 @@ static apr_status_t decrement_connection_count(void *cs_)
     is_last_connection = !apr_atomic_dec32(&connection_count);
     if (listener_is_wakeable
             && ((is_last_connection && listener_may_exit)
-                || (listeners_disabled() && !connections_above_limit()))) {
+                || (listeners_disabled() && !connections_above_limit(NULL)))) {
         apr_pollset_wakeup(event_pollset);
     }
     return APR_SUCCESS;
@@ -1074,7 +1062,7 @@ read_request:
      *   completion at some point may require reads (e.g. SSL_ERROR_WANT_READ),
      *   an output filter can also set the sense to CONN_SENSE_WANT_READ at any
      *   time for event MPM to do the right thing,
-     * - suspend the connection (SUSPENDED) such that it now interracts with
+     * - suspend the connection (SUSPENDED) such that it now interacts with
      *   the MPM through suspend/resume_connection() hooks, and/or registered
      *   poll callbacks (PT_USER), and/or registered timed callbacks triggered
      *   by timer events.
@@ -1523,7 +1511,8 @@ static void process_timeout_queue(struct timeout_queue *q,
                  */
                 apr_time_t q_expiry = cs->queue_timestamp + qp->timeout;
                 apr_time_t next_expiry = queues_next_expiry;
-                if (!next_expiry || next_expiry > q_expiry) {
+                if (!next_expiry
+                        || next_expiry > q_expiry + TIMEOUT_FUDGE_FACTOR) {
                     queues_next_expiry = q_expiry;
                 }
                 break;
@@ -1801,7 +1790,7 @@ static void * APR_THREAD_FUNC listener_thread(apr_thread_t * thd, void *dummy)
                                  "All workers busy, not accepting new conns "
                                  "in this process");
                 }
-                else if (connections_above_limit()) {
+                else if (connections_above_limit(&workers_were_busy)) {
                     disable_listensocks();
                     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf,
                                  "Too many open connections (%u), "
@@ -1810,7 +1799,6 @@ static void * APR_THREAD_FUNC listener_thread(apr_thread_t * thd, void *dummy)
                     ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, ap_server_conf,
                                  "Idle workers: %u",
                                  ap_queue_info_num_idlers(worker_queue_info));
-                    workers_were_busy = 1;
                 }
                 else if (!listener_may_exit) {
                     void *csd = NULL;
@@ -1884,8 +1872,6 @@ static void * APR_THREAD_FUNC listener_thread(apr_thread_t * thd, void *dummy)
          * with and without wake-ability.
          */
         if (timeout_time && timeout_time < (now = apr_time_now())) {
-            timeout_time = now + TIMEOUT_FUDGE_FACTOR;
-
             /* handle timed out sockets */
             apr_thread_mutex_lock(timeout_mutex);
 
@@ -1897,16 +1883,16 @@ static void * APR_THREAD_FUNC listener_thread(apr_thread_t * thd, void *dummy)
                 process_keepalive_queue(0); /* kill'em all \m/ */
             }
             else {
-                process_keepalive_queue(timeout_time);
+                process_keepalive_queue(now);
             }
             /* Step 2: write completion timeouts */
-            process_timeout_queue(write_completion_q, timeout_time,
+            process_timeout_queue(write_completion_q, now,
                                   start_lingering_close_nonblocking);
             /* Step 3: (normal) lingering close completion timeouts */
-            process_timeout_queue(linger_q, timeout_time,
+            process_timeout_queue(linger_q, now,
                                   stop_lingering_close);
             /* Step 4: (short) lingering close completion timeouts */
-            process_timeout_queue(short_linger_q, timeout_time,
+            process_timeout_queue(short_linger_q, now,
                                   stop_lingering_close);
 
             apr_thread_mutex_unlock(timeout_mutex);
@@ -1945,7 +1931,7 @@ static void * APR_THREAD_FUNC listener_thread(apr_thread_t * thd, void *dummy)
 
         if (listeners_disabled()
                 && !workers_were_busy
-                && !connections_above_limit()) {
+                && !connections_above_limit(NULL)) {
             enable_listensocks();
         }
     } /* listener main loop */
@@ -2187,7 +2173,7 @@ static void setup_threads_runtime(void)
      * the connections they handle (i.e. ptrans). We can't use this thread's
      * self pool because all these objects survive it, nor use pchild or pconf
      * directly because this starter thread races with other modules' runtime,
-     * nor finally pchild (or subpool thereof) because it is killed explicitely
+     * nor finally pchild (or subpool thereof) because it is killed explicitly
      * before pconf (thus connections/ptrans can live longer, which matters in
      * ONE_PROCESS mode). So this leaves us with a subpool of pconf, created
      * before any ptrans hence destroyed after.
@@ -2491,7 +2477,7 @@ static void child_main(int child_num_arg, int child_bucket)
      * from being received.  The child processes no longer use signals for
      * any communication with the parent process. Let's also do this before
      * child_init() hooks are called and possibly create threads that
-     * otherwise could "steal" (implicitely) MPM's signals.
+     * otherwise could "steal" (implicitly) MPM's signals.
      */
     rv = apr_setup_signal_thread();
     if (rv != APR_SUCCESS) {
@@ -3336,8 +3322,9 @@ static int event_open_logs(apr_pool_t * p, apr_pool_t * plog,
             new_max = num_buckets;
         }
         new_ptr = (int *)apr_palloc(ap_pglobal, new_max * sizeof(int));
-        memcpy(new_ptr, retained->idle_spawn_rate,
-               retained->mpm->num_buckets * sizeof(int));
+        if (retained->idle_spawn_rate) /* NULL at startup */
+            memcpy(new_ptr, retained->idle_spawn_rate,
+                   retained->mpm->num_buckets * sizeof(int));
         retained->idle_spawn_rate = new_ptr;
         retained->mpm->max_buckets = new_max;
     }
@@ -3457,6 +3444,7 @@ static int event_pre_config(apr_pool_t * pconf, apr_pool_t * plog,
     worker_queue_info = NULL;
     listener_os_thread = NULL;
     listensocks_disabled = 0;
+    listener_is_wakeable = 0;
 
     return OK;
 }

@@ -29,7 +29,12 @@ Release history:
     [NOTE that x.{odd}.z versions are strictly Alpha/Beta releases,
           while x.{even}.z versions are Stable/GA releases.]
 
-    2.4.42  : In development
+    2.4.47  : In development
+    2.4.46  : Tagged on August 01, 2020. Released on August 07, 2020.
+    2.4.45  : Tagged on July 29, 2020. Not released.
+    2.4.44  : Tagged on July 28, 2020. Not released.
+    2.4.43  : Tagged on March 26, 2020. Released on April 01, 2020.
+    2.4.42  : Tagged on March 19, 2020. Not released.
     2.4.41  : Tagged on August 09, 2019. Released on August 14, 2019.
     2.4.40  : Tagged on August 02, 2019. Not released.
     2.4.39  : Tagged on March 27, 2019. Released on April 01, 2019.
@@ -125,11 +130,21 @@ CURRENT RELEASE NOTES:
     . non-Unix, single-platform code
     . routine APLOGNO() backports
     . .gdbinit
+    . Travis integration: .travis.yml and test/travis*.sh
 
 RELEASE SHOWSTOPPERS:
 
+
 PATCHES ACCEPTED TO BACKPORT FROM TRUNK:
   [ start all new proposals below, under PATCHES PROPOSED. ]
+
+  *) core: Avoid a core dump if 'AllowOverride nonfatal' is used in a configuration
+     file.
+     Trunk version of patch:
+        https://svn.apache.org/r1881311
+    Backport version for 2.4.x of patch:
+     +1: jailletc36, giovanni, ylavic
+
 
 PATCHES PROPOSED TO BACKPORT FROM TRUNK:
   [ New proposals should be added at the end of the list ]
@@ -151,121 +166,177 @@ PATCHES PROPOSED TO BACKPORT FROM TRUNK:
      elukey: If anybody has time to review this change it would be great, to know if it needs to be reverted,
              reworked, etc.. I would like to avoid a patch that is clearly wrong for some reviewer sitting here for
              months/years without any action item :)
+     ylavic: will look at it ASAP..
 
-    
-   *) mod_ssl: Add support for loading certs & keys from PKCS#11 URLs via the
-               OpenSSL pkcs11 engine.  Includes related minor cleanups and
-               simplification to mod_ssl internals.
-      trunk patch: http://svn.apache.org/r1830819
-                   http://svn.apache.org/r1830912
-                   http://svn.apache.org/r1830913
-                   http://svn.apache.org/r1830927
-                   http://svn.apache.org/r1831168
-                   http://svn.apache.org/r1831173
-                   http://svn.apache.org/r1835240
-                   http://svn.apache.org/r1835242
-                   http://svn.apache.org/r1835615
-      2.4.x patch: http://people.apache.org/~jorton/mod_ssl_pkcs11.patch
-      +1: jorton, 
+ *) "[mod_dav_fs etag handling] should really honor the FileETag setting".
+     - It now does.
+     - Add "Digest" to FileETag directive, allowing a strong ETag to be
+       generated using a file digest.
+     - Add ap_make_etag_ex() and ap_set_etag_fd() to allow full control over
+       ETag generation.
+     - Add concept of "binary notes" to request_rec, allowing packed bit flags
+       to be added to a request.
+     - First binary note - AP_REQUEST_STRONG_ETAG - allows modules to force
+       the ETag to a strong ETag to comply with RFC requirements, such as those
+       mandated by various WebDAV extensions.
+    trunk patch http://svn.apache.org/r1879285
+                http://svn.apache.org/r1879322
+                http://svn.apache.org/r1879345
+                http://svn.apache.org/r1879346
+                http://svn.apache.org/r1879465
+                http://svn.apache.org/r1879469
+                http://svn.apache.org/r1879470
+                http://svn.apache.org/r1879488
+                http://svn.apache.org/r1879541
+                http://svn.apache.org/r1879548
+    2.4.x patch https://svn.apache.org/repos/asf/httpd/httpd/patches/2.4.x/httpd-etag2.patch
+    +1: minfrin, jim
 
-   *) core: On Windows, fix a start-up crash if <IfFile ...> is used with a
-            path that is not valid
-      trunk patch: http://svn.apache.org/r1866418
-      2.4.x patch: svn merge -c 1866418 ^/httpd/httpd/trunk .
-      +1: jailletc36, covener,
+ *) Add dav_get_provider(), dav_open_lockdb(), dav_close_lockdb() and
+    dav_get_resource() to mod_dav.h.
+    trunk patch: http://svn.apache.org/r1879305
+                 http://svn.apache.org/r1879466
+    2.4.x patch: https://svn.apache.org/repos/asf/httpd/httpd/patches/2.4.x/httpd-2.4-dav-functions2.patch
+    +1: minfrin
 
-   *) mod_proxy_html, mod_xml2enc: Fix build issues with macOS due to r1864469
-      trunk patch: http://svn.apache.org/r1867183
-      2.4.x patch: svn merge -c 1867183 ^/httpd/httpd/trunk .
-      +1: jim
-      jailletc36: -0
-                  I don't think that the #pragma black magic is of any help with GCC 
-                  and jim seems to still have problem with clang and comments with //.
-                  See discussion at:
-                  https://lists.apache.org/thread.html/628cc54a1a345cb773d8e1be0639f8e75d2b481cf89232051c83b787@%3Cdev.httpd.apache.org%3E
-             jim: The problem still exists because this is NOT back ported yet. With this back port, the problem goes away.
+  *) Fix some Windows 64 compilation warnings (if I get positive feedbacks
+     on such patches, I'll try to group more changes in future commits. However
+     fixing these warnings looks like a long and boring task)
+     Trunk version of patch:
+        https://svn.apache.org/r1881303
+        https://svn.apache.org/r1881304
+        https://svn.apache.org/r1881305
+        https://svn.apache.org/r1881306
+    Backport version for 2.4.x of patch:
+      Trunk version of patch works
+      svn merge -c 1881303,1881304,1881305,1881306 ^/httpd/httpd/trunk .
+     +1: jailletc36,
 
-   *) mod_authn_socache: Increase the maximum length of strings that can be cached
-                         PR 62149
-      trunk patch: http://svn.apache.org/r1865405
-      2.4.x patch: svn merge -c 1865405 ^/httpd/httpd/trunk .
-      +1: jailletc36
+  *) core: Correctly strip unwanted headers on 304 response
+     Trunk version of patch:
+        http://svn.apache.org/r1881590
+        http://svn.apache.org/r1881624
+     +1: ylavic, covener
+     ylavic: +1 with CHANGES entry
 
-   *) mod_deflate, mod_brotli: Honor "Accept-Encoding: foo;q=0" as per RFC 7231;
-                               which means 'foo' is "not acceptable".
-                               PR 58158
-      trunk patch: http://svn.apache.org/r1868313
-      2.4.x patch: svn merge -c 1868313 ^/httpd/httpd/trunk .
-      +1: jailletc36
-      jailletc36: tests added in r1868312.
+  [ start of series (staged/cumulative patches) ]
+  *) mod_proxy_http: Fix 100-continue deadlock for spooled request bodies. BZ 63855.
+     trunk patch: https://svn.apache.org/r1769760
+                  https://svn.apache.org/r1770220
+                  https://svn.apache.org/r1868576
+                  https://svn.apache.org/r1868653
+                  https://svn.apache.org/r1883639
+                  https://svn.apache.org/r1883640
+                  https://svn.apache.org/r1884218
+                  https://svn.apache.org/r1884220
+     2.4.x patch: http://people.apache.org/~ylavic/patches/2.4.x-bz63855-1on5.patch
+                  https://github.com/apache/httpd/pull/154
+     +1: ylavic, covener
 
-   *) mod_log_config: Parts of r1331110 is missing in back-port in 2.4.x done
-                      in r1430514. Add it now.
-      trunk patch: http://svn.apache.org/r1331110
-      2.4.x patch: http://home.apache.org/~jailletc36/r1331110.diff
-      +1: jailletc36
+  *) core: output filtering improvements (ease following patches, align trunk/2.4)
+     trunk patch: https://svn.apache.org/r1836032
+                  https://svn.apache.org/r1884295
+                  https://svn.apache.org/r1884296
+                  https://svn.apache.org/r1884304
+                  https://svn.apache.org/r1836237
+                  https://svn.apache.org/r1836258
+                  https://svn.apache.org/r1836354
+                  https://svn.apache.org/r1843939
+     2.4.x patch: http://people.apache.org/~ylavic/patches/2.4.x-core_output_filtering-2on5.patch
+                  https://github.com/apache/httpd/pull/156
+     +1: ylavic,
+     ylavic: These core output filter changes are needed for the proxy
+             tunneling loop to work properly/non-blocking (PR 158 below). They
+             do not include the major filter setaside/reinstate changes from
+             trunk, reluing on existing 2.4 c->data_in_{input,output}_filter
+             flags only. 
 
-  *) Easy patches: synch 2.4.x and trunk
-        - core: print r->uri during failure
-        - core: Call va_end before returning in the error case
-        - mod_cache_disk: fix a Coverity warning
-        - core: Provide TEST_CHAR macro in test_char.h
-        - tag some pools
-        - mod_mime_magic: constify some constant data
-        - mod_authz_core: axe some dead code
-        - core: Fix a signed/unsigned comparison that can never match
-        - mod_session: leave a hint about session expiration at TRACE2
-        - mod_ssl: Fix a typo
-     trunk patch:
-        - http://svn.apache.org/r1787229
-        - http://svn.apache.org/r1842919
-        - http://svn.apache.org/r1842926
-        - http://svn.apache.org/r1856490
-        - http://svn.apache.org/r1862051
-        - http://svn.apache.org/r1862202
-        - http://svn.apache.org/r1864759
-        - http://svn.apache.org/r1864865
-        - http://svn.apache.org/r1865871
-        - http://svn.apache.org/r1867256
-     2.4.x patch: svn merge -c 1787229,1842919,1842926,1856490,1862051,1862202,1864759,1864865,1865871,1867256 ^/httpd/httpd/trunk . 
-     +1: jailletc36
+  *) mod_proxy_http: individual status codes for ProxyErrorOverride. BZ 63628
+     trunk patch: https://svn.apache.org/r1754974
+                  https://svn.apache.org/r1754975
+                  https://svn.apache.org/r1876404
+                  https://svn.apache.org/r1877696
+                  https://svn.apache.org/r1877697
+                  https://svn.apache.org/r1877728
+     2.4.x patch: http://people.apache.org/~ylavic/patches/2.4.x-mod_proxy_http-override-3on5.patch
+                  https://github.com/apache/httpd/pull/157
+     +1: ylavic,
+     ylavic: Besides ProxyErrorOverride individual status codes, merging now
+             the non-functional changes in ap_proxy_http_process_response()
+             around ProxyErrorOverride code helps reducing conflicts with the
+             following commits, and with trunk/2.4 alignment still.
 
-  *) Easy patches: synch 2.4.x and trunk
-        - core: Fix a comment
-        - mod_auth_form: use the provided types via the macro
-        - mod_mime_magic: Constify some constant data
-        - mod_authz_core: Axe some dead code + slighly improve a comment
-        - core: Fix a typo
-        - mod_remoteip: Fix a typo
-        - mod_ssl: save a few cycles
-     trunk patch:
-        - http://svn.apache.org/r1851332
-        - http://svn.apache.org/r1861432
-        - http://svn.apache.org/r1862202
-        - http://svn.apache.org/r1864759
-        - http://svn.apache.org/r1867254
-        - http://svn.apache.org/r1867255
-        - http://svn.apache.org/r1867569
-     2.4.x patch: svn merge -c  1851332,1861432,1862202,1864759,1867254,1867255,1867569 ^/httpd/httpd/trunk . 
-     +1: jailletc36
+  *) mod_proxy_http: handle upgrade/tunneling protocols. BZ 61616 is about
+                     mod_proxy_connect but there has been wstunnel reports
+                     on dev@ about that too lately.
+     trunk patch: https://svn.apache.org/r1678771
+                  https://svn.apache.org/r1832348
+                  https://svn.apache.org/r1869338
+                  https://svn.apache.org/r1869420
+                  https://svn.apache.org/r1878367
+                  https://svn.apache.org/r1877557
+                  https://svn.apache.org/r1877558
+                  https://svn.apache.org/r1877646
+                  https://svn.apache.org/r1877695
+                  https://svn.apache.org/r1879401
+                  https://svn.apache.org/r1879402
+                  https://svn.apache.org/r1880200
+     2.4.x patch: http://people.apache.org/~ylavic/patches/2.4.x-mod_proxy_http-upgrade-4on5.patch
+                  https://github.com/apache/httpd/pull/158
+     +1: ylavic,
+     ylavic: All the changes to mod_proxy_wstunnel have been dropped for this
+             backport proposal, the goal being to handle tunneling/upgrade in
+             mod_proxy_http from now (replacing/obsoleting wstunnel).
 
-  *) mod_ssl: use OPENSSL_init_ssl() to initialise OpenSSL on versions 1.1+.
-     trunk patch: http://svn.apache.org/r1861950
-     2.4.x patch: svn merge -c 1861950 ^/httpd/httpd/trunk . 
-     +1: 
+  *) mod_proxy: common spooling code to allow mod_proxy_fgci proxy-sendcl. BZ 57087 
+     trunk patch: https://svn.apache.org/r1884067
+                  https://svn.apache.org/r1884068
+                  https://svn.apache.org/r1884069
+                  https://svn.apache.org/r1884070
+     2.4.x patch: http://people.apache.org/~ylavic/patches/2.4.x-mod_proxy_fcgi-sendcl-5on5.patch
+                  https://github.com/apache/httpd/pull/162
+     +1: ylavic,
+     ylavic: Long standing BZ (always send Content-Length, according to the CGI
+             specs) which is addressed by reusing mod_proxy_http's spooling
+             code (moved to proxy_util) in mod_proxy_fcgi. The user still needs
+             to SetEnv proxy-sendcl for that (2.4 compat).
+  [ End of series ]
 
-  *) mod_ssl: OCSP does not apply to proxy mode
-     trunk patch: http://svn.apache.org/r1865740
-     2.4.x patch: svn merge -c 1865740 ^/httpd/httpd/trunk . 
-     +1: 
+  *) mod_http2: thread safety with MPM prefork (mainly for ci..)
+     trunk patch: https://svn.apache.org/r1883704
+                  https://svn.apache.org/r1883707
+     2.4.x patch: svn merge -c 1883704,1883707 ^/httpd/httpd/trunk .
+     +1: ylavic, jorton, 
 
-  *) ap_check_pipeline: clarify/simplify !max_blank_lines logic, no functional change.
-     trunk patch: http://svn.apache.org/r1765061
-     2.4.x patch: svn merge -c 1765061 ^/httpd/httpd/trunk . 
-     +1: jailletc36
-     jailletc36: this is fine because if !max_blank_lines, we break at the first
-                 iteration, so we know that mode = AP_MODE_SPECULATIVE
+  *) core: fix c->client_ip for unix socket connections (e.g. proxy_fcgi)
+     trunk patch: https://svn.apache.org/r1883729
+     2.4.x patch: http://people.apache.org/~ylavic/patches/httpd-2.4.x-uds_client_ip.patch
+     +1: ylavic, jorton,
 
+  *) mod_case_filter_in: fix memory leak.
+     trunk patch: https://svn.apache.org/r1883730
+     2.4.x patch: svn merge -c 1883730 ^/httpd/httpd/trunk .
+     +1: ylavic, jorton, 
+
+  *) mod_proxy: pconf vs pchild consistency, and correctness in ONE_PROCESS mode
+     trunk patch: https://svn.apache.org/r1883744
+     2.4.x patch: svn merge -c 1883744 ^/httpd/httpd/trunk .
+     +1: ylavic, jorton, 
+
+  *) mod_auth_digest: fix crash with ONE_PROCESS (debug) mode shutdown
+     trunk patch: https://svn.apache.org/r1883810
+     2.4.x patch: svn merge -c 1883810 ^/httpd/httpd/trunk .
+     +1: ylavic, jorton, 
+
+  *) core: Make writing the pidfile atomic to avoid startup failures
+     after (e.g.) system crashes, but also races with multiple
+     concurrent "httpd -k restart" runs which have a race between
+     reading and writing a fresh pidfile.
+     trunk patch: https://svn.apache.org/r1875153
+                  https://svn.apache.org/r1875240
+                  https://svn.apache.org/r1877645
+     2.4.x patch: https://patch-diff.githubusercontent.com/raw/apache/httpd/pull/163.patch
+     +1: jorton,            
 
 PATCHES/ISSUES THAT ARE BEING WORKED
   [ New entries should be added at the START of the list ]
@@ -287,29 +358,6 @@ PATCHES/ISSUES THAT ARE BEING WORKED
                  See also:
                  https://lists.apache.org/thread.html/b924afe0fcc58a8636b753e630421bf6dc2080653a79575fd5fd641a@%3Cdev.httpd.apache.org%3E
 
-  *) core: Drop an invalid Last-Modified header value coming
-     from a (F)CGI script instead of replacing it with Unix epoch.
-     Warn the users about Last-Modified header value replacements
-     and violations of the RFC.
-     trunk patch: http://svn.apache.org/r1748379
-                  http://svn.apache.org/r1750747
-                  http://svn.apache.org/r1750749
-                  http://svn.apache.org/r1750953
-                  http://svn.apache.org/r1751138
-                  http://svn.apache.org/r1751139
-                  http://svn.apache.org/r1751147
-                  http://svn.apache.org/r1757818
-     2.4.x: trunk patches work, final view:
-            http://home.apache.org/~elukey/httpd-2.4.x-core-last_modified_tz_logging.patch
-     The problem has been discussed in dev@ extensively but we did not reach a common
-     agreement about how to proceed in the long term. While we wait, I would really like
-     to introduce useful logs for the users (the starting point of this change was a users@
-     email thread). If this is not the right way to go I will move the patch to other
-     sections of STATUS (stalled or being worked).
-     The code has been tested with a simple PHP script returning different Last-Modified
-     headers (GMT now, GMT now Europe/Paris, GMT tomorrow, GMT yesterday, PST now).
-     +1: elukey
-
   *) http: Don't remove the Content-Length of zero from a HEAD response if
      it comes from an origin server, module or script. Allow the previous
      behaviour (for legacy/buggy modules only, not origin) by also backporting
@@ -317,7 +365,7 @@ PATCHES/ISSUES THAT ARE BEING WORKED
      comes for free with the same commit).
      trunk patch: http://svn.apache.org/r1554303
                   http://svn.apache.org/r1678215
-     2.4.x patch: http://people.apache.org/~ylavic/httpd-2.4.x-preserve_head_cl_zero.patch
+     2.4.x patch: http://people.apache.org/~ylavic/patches/httpd-2.4.x-preserve_head_cl_zero.patch
      +1: ylavic, jim
      ylavic: r1554303 issued a major MMN bump, but since the ABI change is two
              ints added at the end of core_server_config, the proposed merge
@@ -374,42 +422,7 @@ PATCHES/ISSUES THAT ARE BEING WORKED
              for internal users of this api; not sure if performance
              impact is significant from using malloc here.
 
-   *) mod_proxy: fix concurrent pool access around initialization of workers
-      trunk patch:  http://svn.apache.org/r1865938 + http://svn.apache.org/r1865944
-      2.4.x patch:  http://people.apache.org/~covener/httpd-2.4.x-proxy-segv.diff
-                    (APR_HAS_THREADS context break)
-      +1: covener, jim
-      rpluem says: -1 for now. See further discussion at
-                   https://bz.apache.org/bugzilla/show_bug.cgi?id=63503
-
-
 PATCHES/ISSUES THAT ARE STALLED
-
-  *) core: Allow mod_env to override all system path envvars not just PATH
-     trunk patch: http://svn.apache.org/r1811831
-     2.4.x patch: svn merge -c 1811831 ^/httpd/httpd/trunk .
-     +1: jorton, rpluem
-     ylavic: same as dev@; since SetEnv* are usable from htaccess, wouldn't
-             we open a door here (unconditionally)? 
-             covener: seems like we need some kind of pattern for opting in
-             to restricted arguments.
-
-  *) mod_proxy: Add ap_proxy_define_match_worker() and use it for ProxyPassMatch
-     and ProxyMatch section to distinguish between normal workers and workers
-     with regex substitutions in the name. Implement handling of such workers
-     in ap_proxy_get_worker(). Fixes the bug when regex workers were not
-     matched and used for request. PR 43513.
-     trunk patch: http://svn.apache.org/r1609680
-                  http://svn.apache.org/r1609688
-                  http://svn.apache.org/r1641381
-                  http://svn.apache.org/r1826289
-                  http://svn.apache.org/r1826313
-     ylavic: Merge patch provided (reusing new->real to avoid double de_socketfy() call).
-             Also added missing r1609688 to the patchset.
-     2.4.x patch: http://home.apache.org/~ylavic/patches/httpd-2.4.x-ap_proxy_define_match_worker-v2.patch
-     +1:
-     -0: covener: lots of folks getting dns and connection reuse implicitly after we backport this.
-     ylavic: agreed, withdrawing
 
    * core: Add ap_errorlog_provider to make ErrorLog logging modular. This
            backport keeps syslog logging as part of httpd core and only adds
@@ -431,7 +444,7 @@ PATCHES/ISSUES THAT ARE STALLED
                  needs 2 args which is not valid in ErrorLog manual)
                  Note: This also fixes syslog logging dropping messages with NULL server_rec by reaching up into ap_server_conf
                  explicitly.
-        
+
      trawick: nit: fix "writing" in "/* NULL if we are writing to syslog */"
               (sorry, haven't finished reviewing completely)
      jim: What is the status of this??
@@ -445,6 +458,8 @@ PATCHES/ISSUES THAT ARE STALLED
                   http://svn.apache.org/r1608744
      2.4.x patch: http://people.apache.org/~jkaluza/patches/mod_systemd/httpd-2.4.x-socket-activation.patch
      +1: jkaluza
+     elukey: Some reading context in https://lists.apache.org/list.html?dev@httpd.apache.org:gte=1M:systemd%20socket%20activation
+             Since mod_systemd has been backported, it would be nice to add this feature to httpd 2.4 as well. Thoughts?
 
   * mod_proxy: Ensure network errors detected by the proxy are returned as
     504 Gateway Timeout as opposed to 502 Bad Gateway
@@ -519,20 +534,3 @@ PATCHES/ISSUES THAT ARE STALLED
              needed if the above configure.in proposal gets backported.
              Note that r1812339 could be backported in any case, even if
              the above configure.in proposal does not get accepted.
-
-   * mod_systemd: New module, for integration with systemd on Linux.
-     trunk patch: http://svn.apache.org/r1393976
-                  http://svn.apache.org/r1393997
-                  http://svn.apache.org/r1484554
-                  http://svn.apache.org/r1528032
-                  http://svn.apache.org/r1528034
-                  http://svn.apache.org/r1614821
-                  http://svn.apache.org/r1618579
-                  http://svn.apache.org/r1618588
-     2.4.x patch: http://people.apache.org/~jkaluza/patches/mod_systemd/httpd-2.4.x-mod_systemd.patch
-     +1: jkaluza
-     sf comments: The IdleShutdown logic seems broken. Consider a single
-                  active connection that is stalled for 10 seconds. That
-                  connection will be broken after GracefulShutdownTimeout.
-                  A better logic would be to check if there is any open
-                  connection that is not in keep-alive state.

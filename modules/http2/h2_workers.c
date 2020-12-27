@@ -155,7 +155,7 @@ static apr_status_t slot_pull_task(h2_slot *slot, h2_mplx *m)
 {
     apr_status_t rv;
     
-    rv = h2_mplx_pop_task(m, &slot->task);
+    rv = h2_mplx_s_pop_task(m, &slot->task);
     if (slot->task) {
         /* Ok, we got something to give back to the worker for execution. 
          * If we still have idle workers, we let the worker be sticky, 
@@ -234,10 +234,10 @@ static void* APR_THREAD_FUNC slot_run(apr_thread_t *thread, void *wctx)
              * mplx the opportunity to give us back a new task right away.
              */
             if (!slot->aborted && (--slot->sticks > 0)) {
-                h2_mplx_task_done(slot->task->mplx, slot->task, &slot->task);
+                h2_mplx_s_task_done(slot->task->mplx, slot->task, &slot->task);
             }
             else {
-                h2_mplx_task_done(slot->task->mplx, slot->task, NULL);
+                h2_mplx_s_task_done(slot->task->mplx, slot->task, NULL);
                 slot->task = NULL;
             }
         }
@@ -269,14 +269,13 @@ static apr_status_t workers_pool_cleanup(void *data)
         }
 
         h2_fifo_term(workers->mplxs);
-        h2_fifo_interrupt(workers->mplxs);
 
         cleanup_zombies(workers);
     }
     return APR_SUCCESS;
 }
 
-h2_workers *h2_workers_create(server_rec *s, apr_pool_t *server_pool,
+h2_workers *h2_workers_create(server_rec *s, apr_pool_t *pchild,
                               int min_workers, int max_workers,
                               int idle_secs)
 {
@@ -286,14 +285,14 @@ h2_workers *h2_workers_create(server_rec *s, apr_pool_t *server_pool,
     int i, n;
 
     ap_assert(s);
-    ap_assert(server_pool);
+    ap_assert(pchild);
 
     /* let's have our own pool that will be parent to all h2_worker
      * instances we create. This happens in various threads, but always
      * guarded by our lock. Without this pool, all subpool creations would
      * happen on the pool handed to us, which we do not guard.
      */
-    apr_pool_create(&pool, server_pool);
+    apr_pool_create(&pool, pchild);
     apr_pool_tag(pool, "h2_workers");
     workers = apr_pcalloc(pool, sizeof(h2_workers));
     if (!workers) {
@@ -364,7 +363,12 @@ h2_workers *h2_workers_create(server_rec *s, apr_pool_t *server_pool,
         workers->dynamic = (workers->worker_count < workers->max_workers);
     }
     if (status == APR_SUCCESS) {
-        apr_pool_pre_cleanup_register(pool, workers, workers_pool_cleanup);    
+        /* Stop/join the workers threads when the MPM child exits (pchild is
+         * destroyed), and as a pre_cleanup of pchild thus before the threads
+         * pools (children of workers->pool) so that they are not destroyed
+         * before/under us.
+         */
+        apr_pool_pre_cleanup_register(pchild, workers, workers_pool_cleanup);    
         return workers;
     }
     return NULL;

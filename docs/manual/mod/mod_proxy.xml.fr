@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE modulesynopsis SYSTEM "../style/modulesynopsis.dtd">
 <?xml-stylesheet type="text/xsl" href="../style/manual.fr.xsl"?>
-<!-- English Revision: 1860166 -->
+<!-- English Revision: 1883046 -->
 <!-- French translation : Lucien GENTIS -->
 <!-- Reviewed by : Vincent Deffontaines -->
 
@@ -74,7 +74,9 @@
         <tr><td>ftp</td><td><module>mod_proxy_ftp</module></td></tr>
         <tr><td>HTTP/0.9, HTTP/1.0, et
           HTTP/1.1</td><td><module>mod_proxy_http</module></td></tr>
+	<tr><td>HTTP/2.0</td><td><module>mod_proxy_http2</module></td></tr>
         <tr><td>SCGI</td><td><module>mod_proxy_scgi</module></td></tr>
+	<tr><td>UWSGI</td><td><module>mod_proxy_uwsgi</module></td></tr>
 	<tr><td>WS and WSS (Web-sockets)</td><td><module>mod_proxy_wstunnel</module></td></tr>
         </table>
       </li>
@@ -1404,8 +1406,10 @@ ProxyPass "/mirror/foo/i" "!"
     </td></tr>
     <tr><td>secret</td>
         <td>-</td>
-        <td><p>Le mot de passe utilisé par <module>mod_proxy_ajp</module>. Voir
-	la documentation de ce module pour plus de détails.</p>
+        <td>Le mot de passe utilisé par <module>mod_proxy_ajp</module>. Il doit
+	identique au mot de passe configuré sur le côté serveur de la connexion
+	AJP.<br />
+	Disponible à partir de la version 2.4.42 du serveur HTTP Apache.
     </td></tr>
     <tr><td>upgrade</td>
         <td>WebSocket</td>
@@ -2084,7 +2088,7 @@ NoProxy         ".example.com" "192.168.112.0/21"
       compte de la casse, et les parties droites des <var>Domaine</var>s
       sont toujours censées correspondre à la racine de l'arborescence
       DNS, si bien que les domaines <code>.ExEmple.com</code> et
-      <code>.example.com.</code> (notez le point à la fin du nom) sont
+      <code>.exemple.com.</code> (notez le point à la fin du nom) sont
       considérés comme identiques. Comme une comparaison de domaines ne
       nécessite pas de recherche DNS, elle est beaucoup plus efficace
       qu'une comparaison de sous-réseaux.</p>
@@ -2385,7 +2389,7 @@ en-têtes X-Forwarded-*</description>
 <context>virtual host</context>
 <context>directory</context>
 </contextlist>
-<compatibility>Disponible à partir de la version 2.4.39 du serveur HTTP Apache</compatibility>
+<compatibility>Disponible à partir de la version 2.4.40 du serveur HTTP Apache</compatibility>
 
 <usage>
     <p>Cette directive permet de contrôler le transfert par le mandataire du

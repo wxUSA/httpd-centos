@@ -132,7 +132,7 @@ apr_status_t md_acme_drive_set_acct(md_proto_driver_t *d, md_result_t *result)
         if (!ad->md->contacts || apr_is_empty_array(md->contacts)) {
             rv = APR_EINVAL;
             md_result_printf(result, rv, "No contact information is available for MD %s. "
-                             "Configure one using the ServerAdmin directive.", md->name);            
+                             "Configure one using the MDContactEmail or ServerAdmin directive.", md->name);            
             md_result_log(result, MD_LOG_ERR);
             goto leave;
         }
@@ -530,8 +530,8 @@ static apr_status_t acme_driver_init(md_proto_driver_t *d, md_result_t *result)
     }
     else {
         /* free to chose. Add all we support and see what we get offered */
-        APR_ARRAY_PUSH(ad->ca_challenges, const char*) = MD_AUTHZ_TYPE_HTTP01;
         APR_ARRAY_PUSH(ad->ca_challenges, const char*) = MD_AUTHZ_TYPE_TLSALPN01;
+        APR_ARRAY_PUSH(ad->ca_challenges, const char*) = MD_AUTHZ_TYPE_HTTP01;
         APR_ARRAY_PUSH(ad->ca_challenges, const char*) = MD_AUTHZ_TYPE_DNS01;
 
         if (!d->can_http && !d->can_https 

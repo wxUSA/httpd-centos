@@ -136,7 +136,7 @@ static int uwsgi_send_headers(request_rec *r, proxy_conn_rec * conn)
     int j;
 
     apr_size_t headerlen = 4;
-    apr_uint16_t pktsize, keylen, vallen;
+    apr_size_t pktsize, keylen, vallen;
     const char *script_name;
     const char *path_info;
     const char *auth;
@@ -175,7 +175,16 @@ static int uwsgi_send_headers(request_rec *r, proxy_conn_rec * conn)
     env = (apr_table_entry_t *) env_table->elts;
 
     for (j = 0; j < env_table->nelts; ++j) {
-        headerlen += 2 + strlen(env[j].key) + 2 + strlen(env[j].val);
+        headerlen += 2 + strlen(env[j].key) + 2 + (env[j].val ? strlen(env[j].val) : 0);
+    }
+
+    pktsize = headerlen - 4;
+    if (pktsize > APR_UINT16_MAX) {
+        ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(10259)
+                      "can't send headers to %s:%u: packet size too "
+                      "large (%" APR_SIZE_T_FMT ")",
+                      conn->hostname, conn->port, pktsize);
+        return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     ptr = buf = apr_palloc(r->pool, headerlen);
@@ -189,14 +198,14 @@ static int uwsgi_send_headers(request_rec *r, proxy_conn_rec * conn)
         memcpy(ptr, env[j].key, keylen);
         ptr += keylen;
 
-        vallen = strlen(env[j].val);
+        vallen = env[j].val ? strlen(env[j].val) : 0;
         *ptr++ = (apr_byte_t) (vallen & 0xff);
         *ptr++ = (apr_byte_t) ((vallen >> 8) & 0xff);
-        memcpy(ptr, env[j].val, vallen);
+        if (env[j].val) {
+            memcpy(ptr, env[j].val, vallen);
+        }
         ptr += vallen;
     }
-
-    pktsize = headerlen - 4;
 
     buf[0] = 0;
     buf[1] = (apr_byte_t) (pktsize & 0xff);

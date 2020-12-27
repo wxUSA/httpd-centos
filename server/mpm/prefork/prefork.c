@@ -703,8 +703,8 @@ static int make_child(server_rec *s, int slot)
          */
         apr_signal(SIGHUP, just_die);
         apr_signal(SIGTERM, just_die);
-        /* Ignore SIGINT in child. This fixes race-condition in signals
-         * handling when httpd is runnning on foreground and user hits ctrl+c.
+        /* Ignore SIGINT in child. This fixes race-conditions in signals
+         * handling when httpd is running on foreground and user hits ctrl+c.
          * In this case, SIGINT is sent to all children followed by SIGTERM
          * from the main process, which interrupts the SIGINT handler and
          * leads to inconsistency.
@@ -1263,7 +1263,7 @@ static int prefork_pre_config(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp
     if (retained->mpm->module_loads == 2) {
         if (!one_process && !foreground) {
             /* before we detach, setup crash handlers to log to errorlog */
-            ap_fatal_signal_setup(ap_server_conf, pconf);
+            ap_fatal_signal_setup(ap_server_conf, p /* == pconf */);
             rv = apr_proc_detach(no_detach ? APR_PROC_DETACH_FOREGROUND
                                            : APR_PROC_DETACH_DAEMONIZE);
             if (rv != APR_SUCCESS) {

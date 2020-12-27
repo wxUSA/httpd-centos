@@ -47,9 +47,9 @@ typedef struct {
 static int set_h1_header(void *ctx, const char *key, const char *value)
 {
     h1_ctx *x = ctx;
-    x->status = h2_req_add_header(x->headers, x->pool, key, strlen(key), 
-                                  value, strlen(value));
-    return (x->status == APR_SUCCESS)? 1 : 0;
+    int was_added;
+    h2_req_add_header(x->headers, x->pool, key, strlen(key), value, strlen(value), 0, &was_added);
+    return 1;
 }
 
 apr_status_t h2_request_rcreate(h2_request **preq, apr_pool_t *pool, 
@@ -79,11 +79,12 @@ apr_status_t h2_request_rcreate(h2_request **preq, apr_pool_t *pool,
     }
     
     req = apr_pcalloc(pool, sizeof(*req));
-    req->method    = apr_pstrdup(pool, r->method);
-    req->scheme    = scheme;
-    req->authority = authority;
-    req->path      = path;
-    req->headers   = apr_table_make(pool, 10);
+    req->method      = apr_pstrdup(pool, r->method);
+    req->scheme      = scheme;
+    req->authority   = authority;
+    req->path        = path;
+    req->headers     = apr_table_make(pool, 10);
+    req->http_status = H2_HTTP_STATUS_UNSET;
     if (r->server) {
         req->serialize = h2_config_rgeti(r, H2_CONF_SER_HEADERS);
     }
@@ -99,10 +100,12 @@ apr_status_t h2_request_rcreate(h2_request **preq, apr_pool_t *pool,
 
 apr_status_t h2_request_add_header(h2_request *req, apr_pool_t *pool, 
                                    const char *name, size_t nlen,
-                                   const char *value, size_t vlen)
+                                   const char *value, size_t vlen,
+                                   size_t max_field_len, int *pwas_added)
 {
     apr_status_t status = APR_SUCCESS;
     
+    *pwas_added = 0;
     if (nlen <= 0) {
         return status;
     }
@@ -143,8 +146,9 @@ apr_status_t h2_request_add_header(h2_request *req, apr_pool_t *pool,
         }
     }
     else {
-        /* non-pseudo header, append to work bucket of stream */
-        status = h2_req_add_header(req->headers, pool, name, nlen, value, vlen);
+        /* non-pseudo header, add to table */
+        status = h2_req_add_header(req->headers, pool, name, nlen, value, vlen, 
+                                   max_field_len, pwas_added);
     }
     
     return status;
@@ -156,7 +160,7 @@ apr_status_t h2_request_end_headers(h2_request *req, apr_pool_t *pool, int eos, 
     
     /* rfc7540, ch. 8.1.2.3:
      * - if we have :authority, it overrides any Host header 
-     * - :authority MUST be ommited when converting h1->h2, so we
+     * - :authority MUST be omitted when converting h1->h2, so we
      *   might get a stream without, but then Host needs to be there */
     if (!req->authority) {
         const char *host = apr_table_get(req->headers, "Host");
@@ -288,6 +292,9 @@ request_rec *h2_request_create_rec(const h2_request *req, conn_rec *c)
     if (r->method_number == M_GET && r->method[0] == 'H') {
         r->header_only = 1;
     }
+    r->the_request = apr_psprintf(r->pool, "%s %s HTTP/2.0", 
+                                  req->method, req->path ? req->path : "");
+    r->headers_in = apr_table_clone(r->pool, req->headers);
 
     rpath = (req->path ? req->path : "");
     ap_parse_uri(r, rpath);
@@ -304,7 +311,9 @@ request_rec *h2_request_create_rec(const h2_request *req, conn_rec *c)
      */
     r->hostname = NULL;
     ap_update_vhost_from_headers(r);
-    
+    r->protocol = "HTTP/2.0";
+    r->proto_num = HTTP_VERSION(2, 0);
+
     /* we may have switched to another server */
     r->per_dir_config = r->server->lookup_defaults;
     
@@ -317,6 +326,13 @@ request_rec *h2_request_create_rec(const h2_request *req, conn_rec *c)
             r->status = HTTP_EXPECTATION_FAILED;
             ap_send_error_response(r, 0);
         }
+    }
+
+    if (req->http_status != H2_HTTP_STATUS_UNSET) {
+        access_status = req->http_status;
+        r->status = HTTP_OK;
+        /* Be safe and close the connection */
+        c->keepalive = AP_CONN_CLOSE;
     }
 
     /*

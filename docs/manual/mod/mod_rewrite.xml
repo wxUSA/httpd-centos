@@ -821,6 +821,15 @@ AliasMatch "^/myapp" "/opt/myapp-1.2.3"
             <em>CondPattern</em>, or is equal to <em>CondPattern</em>
             (the two strings are equal, character for character).</dd>
         </dl>
+        <note><title>Note</title>
+        The string comparison operator is part of the <em>CondPattern</em>
+        argument and must be included in the quotes if those are used. Eg.
+        
+        <highlight language="config">
+RewriteCond %{HTTP_USER_AGENT} "=This Robot/1.0"
+        </highlight>
+        </note>
+        
         </li>
 
         <li>
@@ -1327,7 +1336,7 @@ cannot use <code>$N</code> in the substitution string!
     <tr>
         <td>cookie|CO=<em>NAME</em>:<em>VAL</em></td>
         <td>Sets a cookie in the client browser. Full syntax is:
-        CO=<em>NAME</em>:<em>VAL</em>:<em>domain</em>[:<em>lifetime</em>[:<em>path</em>[:<em>secure</em>[:<em>httponly</em>]]]] <em><a href="../rewrite/flags.html#flag_co">details ...</a></em>
+        CO=<em>NAME</em>:<em>VAL</em>:<em>domain</em>[:<em>lifetime</em>[:<em>path</em>[:<em>secure</em>[:<em>httponly</em>[<em>samesite</em>]]]]] <em><a href="../rewrite/flags.html#flag_co">details ...</a></em>
         </td>
     </tr>
     <tr>

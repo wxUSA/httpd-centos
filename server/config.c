@@ -59,7 +59,6 @@
 
 AP_DECLARE_DATA const char *ap_server_argv0 = NULL;
 AP_DECLARE_DATA const char *ap_server_root = NULL;
-AP_DECLARE_DATA const char *ap_runtime_dir = NULL;
 AP_DECLARE_DATA server_rec *ap_server_conf = NULL;
 AP_DECLARE_DATA apr_pool_t *ap_pglobal = NULL;
 
@@ -1118,8 +1117,9 @@ static const char *ap_build_config_sub(apr_pool_t *p, apr_pool_t *temp_pool,
     const char *args;
     char *cmd_name;
     ap_directive_t *newdir;
-    module *mod = ap_top_module;
     const command_rec *cmd;
+    ap_mod_list *ml;
+    char *lname;
 
     if (*l == '#' || *l == '\0')
         return NULL;
@@ -1157,9 +1157,12 @@ static const char *ap_build_config_sub(apr_pool_t *p, apr_pool_t *temp_pool,
     newdir->line_num = parms->config_file->line_number;
     newdir->args = apr_pstrdup(p, args);
 
-    if ((cmd = ap_find_command_in_modules(cmd_name, &mod)) != NULL) {
+    lname = apr_pstrdup(temp_pool, cmd_name);
+    ap_str_tolower(lname);
+    ml = apr_hash_get(ap_config_hash, lname, APR_HASH_KEY_STRING);
+
+    if (ml && (cmd = ml->cmd) != NULL) {
         newdir->directive = cmd->name;
-        
         if (cmd->req_override & EXEC_ON_READ) {
             ap_directive_t *sub_tree = NULL;
 

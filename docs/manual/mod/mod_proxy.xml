@@ -68,7 +68,9 @@
         <tr><td>ftp</td><td><module>mod_proxy_ftp</module></td></tr>
         <tr><td>HTTP/0.9, HTTP/1.0, and
           HTTP/1.1</td><td><module>mod_proxy_http</module></td></tr>
+        <tr><td>HTTP/2.0</td><td><module>mod_proxy_http2</module></td></tr>
         <tr><td>SCGI</td><td><module>mod_proxy_scgi</module></td></tr>
+        <tr><td>UWSGI</td><td><module>mod_proxy_uwsgi</module></td></tr>
         <tr><td>WS and WSS (Web-sockets)</td><td><module>mod_proxy_wstunnel</module></td></tr>
         </table>
       </li>
@@ -1232,8 +1234,10 @@ ProxyPass "/mirror/foo/i" "!"
     </td></tr>
     <tr><td>secret</td>
         <td>-</td>
-        <td><p>Value of secret used by <module>mod_proxy_ajp</module>.
-        See the documentation of this module for more details.</p>
+        <td>Value of secret used by <module>mod_proxy_ajp</module>.
+        It must be identical to the secret configured on the server side of the
+        AJP connection.<br />
+        Available in Apache HTTP Server 2.4.42 and later.
     </td></tr>
     <tr><td>upgrade</td>
         <td>WebSocket</td>
@@ -2074,7 +2078,7 @@ header for proxied requests</description>
 <context>virtual host</context>
 <context>directory</context>
 </contextlist>
-<compatibility>Available in version 2.4.39 and later</compatibility>
+<compatibility>Available in version 2.4.40 and later</compatibility>
 
 <usage>
     <p>This directive determines whether the proxy should forward 100-continue

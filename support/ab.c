@@ -18,7 +18,7 @@
    ** This program is based on ZeusBench V1.0 written by Adam Twiss
    ** which is Copyright (c) 1996 by Zeus Technology Ltd. http://www.zeustech.net/
    **
-   ** This software is provided "as is" and any express or implied waranties,
+   ** This software is provided "as is" and any express or implied warranties,
    ** including but not limited to, the implied warranties of merchantability and
    ** fitness for a particular purpose are disclaimed.  In no event shall
    ** Zeus Technology Ltd. be liable for any direct, indirect, incidental, special,
@@ -55,7 +55,7 @@
    **      trapping of connection errors which influenced measurements.
    **      Contributed by Sander Temme, Early 2001
    ** Version 1.3e
-   **    - Changed timeout behavour during write to work whilst the sockets
+   **    - Changed timeout behavior during write to work whilst the sockets
    **      are filling up and apr_write() does writes a few - but not all.
    **      This will potentially change results. <dirkx@webweaving.org>, April 2001
    ** Version 2.0.36-dev
@@ -1316,7 +1316,7 @@ static void output_html_results(void)
         total    = ap_round_ms(total);
 
         if (done > 0) { /* avoid division by zero (if 0 done) */
-            printf("<tr %s><th %s colspan=4>Connnection Times (ms)</th></tr>\n",
+            printf("<tr %s><th %s colspan=4>Connection Times (ms)</th></tr>\n",
                trstring, tdstring);
             printf("<tr %s><th %s>&nbsp;</th> <th %s>min</th>   <th %s>avg</th>   <th %s>max</th></tr>\n",
                trstring, tdstring, tdstring, tdstring, tdstring);

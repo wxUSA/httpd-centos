@@ -372,6 +372,7 @@ dnl ## Check for programs
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(PKGCONFIG, pkg-config)
 AC_PATH_PROG(RSYNC, rsync)
+AC_PATH_PROG(SVN, svn)
 AC_PROG_AWK
 AC_PROG_LN_S
 AC_CHECK_TOOL(RANLIB, ranlib, true)
@@ -503,6 +504,8 @@ AC_CACHE_CHECK([for tm_gmtoff in struct tm], ac_cv_struct_tm_gmtoff,
 if test "$ac_cv_struct_tm_gmtoff" = "yes"; then
     AC_DEFINE(HAVE_GMTOFF, 1, [Define if struct tm has a tm_gmtoff field])
 fi
+
+APACHE_CHECK_SYSTEMD
 
 dnl ## Set up any appropriate OS-specific environment variables for apachectl
 
