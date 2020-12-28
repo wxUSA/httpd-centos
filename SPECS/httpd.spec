@@ -76,7 +76,7 @@ Patch40: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861793+.patch
 #Patch42: httpd-2.4.43-r1828172+.patch
 Patch43: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslcoalesce.patch
-Patch44: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.46-lua-resume.patch
+#Patch44: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.46-lua-resume.patch
 Patch66: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1842929+.patch
 # Bug fixes
 # Patch50: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-fallbackresource.patch
@@ -231,7 +231,7 @@ interface for storing and accessing per-user session data.
 %patch41 -p1 -b .r1861793+
 #%patch42 -p1 -b .r1828172+
 %patch43 -p1 -b .sslcoalesce
-%patch44 -p1 -b .luaresume
+#%patch44 -p1 -b .luaresume
 %patch66 -p1 -b .r1842929+
 
 #%patch60 -p1 -b .enable-sslv3
