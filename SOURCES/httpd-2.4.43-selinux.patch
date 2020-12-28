@@ -1,5 +1,10 @@
+
+Log the SELinux context at startup.
+
+Upstream-Status: unlikely to be any interest in this upstream
+
 diff --git a/configure.in b/configure.in
-index a00b8c533a..a68e1f69e6 100644
+index eedba50..a208b53 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -484,6 +484,11 @@ getloadavg
@@ -15,7 +20,7 @@ index a00b8c533a..a68e1f69e6 100644
  [AC_TRY_RUN(#define _GNU_SOURCE
  #include <unistd.h>
 diff --git a/server/core.c b/server/core.c
-index 6c4bccf3b2..dfca50a251 100644
+index ec74029..cb8e463 100644
 --- a/server/core.c
 +++ b/server/core.c
 @@ -59,6 +59,10 @@
@@ -29,11 +34,10 @@ index 6c4bccf3b2..dfca50a251 100644
  /* LimitRequestBody handling */
  #define AP_LIMIT_REQ_BODY_UNSET         ((apr_off_t) -1)
  #define AP_DEFAULT_LIMIT_REQ_BODY       ((apr_off_t) 0)
-@@ -4979,6 +4983,29 @@ static int core_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *pte
+@@ -4971,6 +4975,28 @@ static int core_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *pte
      }
-     apr_pool_cleanup_register(pconf, NULL, ap_mpm_end_gen_helper,
-                               apr_pool_cleanup_null);
-+
+ #endif
+ 
 +#ifdef HAVE_SELINUX
 +    {
 +        static int already_warned = 0;

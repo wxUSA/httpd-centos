@@ -61,7 +61,6 @@ Patch3: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd
 # Needed for socket activation and mod_systemd patch
 Patch19: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-detect-systemd.patch
 # Features/functional changes
-Patch21: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1842929+.patch
 Patch22: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-mod_systemd.patch
 Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-export.patch
 Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-corelimit.patch
@@ -78,7 +77,7 @@ Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 #Patch42: httpd-2.4.43-r1828172+.patch
 Patch43: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslcoalesce.patch
 Patch44: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.46-lua-resume.patch
-
+Patch66: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1842929+.patch
 # Bug fixes
 # Patch50: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-fallbackresource.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
@@ -217,7 +216,6 @@ interface for storing and accessing per-user session data.
 
 %patch19 -p1 -b .detectsystemd
 
-%patch21 -p1 -b .r1842929+
 %patch22 -p1 -b .mod_systemd
 %patch23 -p1 -b .export
 %patch24 -p1 -b .corelimit
@@ -234,6 +232,7 @@ interface for storing and accessing per-user session data.
 #%patch42 -p1 -b .r1828172+
 %patch43 -p1 -b .sslcoalesce
 %patch44 -p1 -b .luaresume
+%patch66 -p1 -b .r1842929+
 
 #%patch60 -p1 -b .enable-sslv3
 
