@@ -247,6 +247,7 @@ static request_rec *make_fake_req(conn_rec *c, request_rec *r)
     request_rec *rp;
 
     apr_pool_create(&pool, c->pool);
+    apr_pool_tag(pool, "proxy_uwsgi_rp");
 
     rp = apr_pcalloc(pool, sizeof(*r));
 
@@ -371,9 +372,9 @@ static int uwsgi_response(request_rec *r, proxy_conn_rec * backend,
 #if AP_MODULE_MAGIC_AT_LEAST(20101106,0)
     dconf =
         ap_get_module_config(r->per_dir_config, &proxy_module);
-    if (dconf->error_override && ap_is_HTTP_ERROR(r->status)) {
+    if (ap_proxy_should_override(dconf, r->status)) {
 #else
-    if (conf->error_override && ap_is_HTTP_ERROR(r->status)) {
+    if (ap_proxy_should_override(conf, r->status)) {
 #endif
         int status = r->status;
         r->status = HTTP_OK;
