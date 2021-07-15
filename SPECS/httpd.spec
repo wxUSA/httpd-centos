@@ -14,7 +14,7 @@
 
 Summary: Apache HTTP Server
 Name: httpd
-Version: 2.4.46
+Version: 2.4.48
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
 Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name}-%{version}.tar.gz
@@ -82,7 +82,129 @@ Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 # Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
 #Patch60: httpd-2.4.34-enable-sslv3.patch
 #Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.41-r1865749.patch
-#Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.48-r1878890.patch
+
+# Security fixes
+
+License: ASL 2.0
+Group: System Environment/Daemons
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRequires: gcc, autoconf, automake, pkgconfig, findutils, xmlto
+BuildRequires: perl-interpreter, perl-generators, systemd-devel, brotli-devel
+BuildRequires: zlib-devel, libselinux-devel, lua-devel
+BuildRequires: apr-devel >= 1.5.0, apr-util-devel >= 1.5.0, pcre-devel >= 5.0
+BuildRequires: epel-release >= 7
+Requires: /etc/mime.types
+Obsoletes: httpd-suexec
+Provides: webserver
+Provides: mod_dav = %{version}-%{release}, httpd-suexec = %{version}-%{release}
+Provides: httpd-mmn = %{mmn}, httpd-mmn = %{mmnisa}
+Requires: httpd-tools = %{version}-%{release}
+Requires: httpd-filesystem = %{version}-%{release}
+Requires: mod_http2
+Requires(pre): httpd-filesystem
+Requires(preun): systemd-units
+Requires(postun): systemd-units
+Requires(post): systemd-units
+Conflicts: apr < 1.5.0-1
+Provides: mod_proxy_uwsgi = %{version}-%{release}
+Obsoletes: mod_proxy_uwsgi < 2.0.17.1-2
+
+%description
+The Apache HTTP Server is a powerful, efficient, and extensible
+web server.
+
+%package devel
+Group: Development/Libraries
+Summary: Development interfaces for the Apache HTTP Server
+Requires: apr-devel, apr-util-devel, pkgconfig
+Requires: httpd = %{version}-%{release}
+
+%description devel
+The httpd-devel package contains the APXS binary and other files
+that you need to build Dynamic Shared Objects (DSOs) for the
+Apache HTTP Server.
+
+If you are installing the Apache HTTP Server and you want to be
+able to compile or develop additional modules for Apache, you need
+to install this package.
+
+%package manual
+Group: Documentation
+Summary: Documentation for the Apache HTTP Server
+Requires: httpd = %{version}-%{release}
+BuildArch: noarch
+
+%description manual
+The httpd-manual package contains the complete manual and
+reference guide for the Apache HTTP Server. The information can
+also be found at https://httpd.apache.org/docs/2.4/.
+
+%package filesystem
+Group: System Environment/Daemons
+Summary: The basic directory layout for the Apache HTTP Server
+BuildArch: noarch
+Requires(pre): /usr/sbin/useradd
+
+%description filesystem
+The httpd-filesystem package contains the basic directory layout
+for the Apache HTTP Server including the correct permissions
+for the directories.
+
+%package tools
+Group: System Environment/Daemons
+Summary: Tools for use with the Apache HTTP Server
+
+%description tools
+The httpd-tools package contains tools which can be used with 
+the Apache HTTP Server.
+
+%package -n mod_ssl
+Group: System Environment/Daemons
+Summary: SSL/TLS module for the Apache HTTP Server
+Epoch: 1
+BuildRequires: openssl-devel
+Requires(pre): httpd-filesystem
+Requires: httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+Requires: sscg >= 2.2.0, /usr/bin/hostname
+# Require an OpenSSL which supports PROFILE=SYSTEM
+# Not for CentOS-7
+### Conflicts: openssl-libs < 1:1.0.1h-4
+
+%description -n mod_ssl
+The mod_ssl module provides strong cryptography for the Apache Web
+server via the Secure Sockets Layer (SSL) and Transport Layer
+Security (TLS) protocols.
+
+%package -n mod_proxy_html
+Group: System Environment/Daemons
+Summary: HTML and XML content filters for the Apache HTTP Server
+Requires: httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+BuildRequires: libxml2-devel
+Epoch: 1
+Obsoletes: mod_proxy_html < 1:2.4.1-2
+
+%description -n mod_proxy_html
+The mod_proxy_html and mod_xml2enc modules provide filters which can
+transform and modify HTML and XML content.
+
+%package -n mod_ldap
+Group: System Environment/Daemons
+Summary: LDAP authentication modules for the Apache HTTP Server
+Requires: httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+Requires: apr-util-ldap
+
+%description -n mod_ldap
+The mod_ldap and mod_authnz_ldap modules add support for LDAP
+authentication to the Apache HTTP Server.
+
+%package -n mod_session
+Group: System Environment/Daemons
+Summary: Session interface for the Apache HTTP Server
+Requires: httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+
+%description -n mod_session
+The mod_session module and associated backends provide an abstract
+interface for storing and accessing per-user session data.
 
 %prep
 %setup -q
