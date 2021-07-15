@@ -6,14 +6,14 @@ to do so indirectly.
 Upstream: https://svn.apache.org/r1861685 (as new default-off configure option)
 
 diff --git a/Makefile.in b/Makefile.in
-index 9eeb5c7..8746a10 100644
+index 40c7076..ac98e5f 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -4,8 +4,15 @@ CLEAN_SUBDIRS = test
  
  PROGRAM_NAME         = $(progname)
  PROGRAM_SOURCES      = modules.c
--PROGRAM_LDADD        = buildmark.o $(HTTPD_LDFLAGS) $(PROGRAM_DEPENDENCIES) $(PCRE_LIBS) $(EXTRA_LIBS) $(AP_LIBS) $(LIBS)
+-PROGRAM_LDADD        = buildmark.o $(HTTPD_LDFLAGS) $(PROGRAM_DEPENDENCIES) $(HTTPD_LIBS) $(EXTRA_LIBS) $(AP_LIBS) $(LIBS)
 +PROGRAM_LDADD        = buildmark.o $(HTTPD_LDFLAGS) \
 +	$(PROGRAM_LDDEPS)  \
 +	$(HTTPD_LIBS) $(EXTRA_LIBS) $(AP_LIBS) $(LIBS)
@@ -27,7 +27,7 @@ index 9eeb5c7..8746a10 100644
    server/libmain.la \
    $(BUILTIN_LIBS) \
 diff --git a/server/Makefile.in b/server/Makefile.in
-index 1fa3344..116850b 100644
+index 8111877..f00bb3f 100644
 --- a/server/Makefile.in
 +++ b/server/Makefile.in
 @@ -12,7 +12,7 @@ LTLIBRARY_SOURCES = \
@@ -36,7 +36,7 @@ index 1fa3344..116850b 100644
  	util_charset.c util_cookies.c util_debug.c util_xml.c \
 -	util_filter.c util_pcre.c util_regex.c exports.c \
 +	util_filter.c util_pcre.c util_regex.c \
- 	scoreboard.c error_bucket.c protocol.c core.c request.c provider.c \
+ 	scoreboard.c error_bucket.c protocol.c core.c request.c ssl.c provider.c \
  	eoc_bucket.c eor_bucket.c core_filters.c \
  	util_expr_parse.c util_expr_scan.c util_expr_eval.c
 diff --git a/server/main.c b/server/main.c

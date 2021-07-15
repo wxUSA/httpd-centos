@@ -1,8 +1,8 @@
 diff --git a/Makefile.in b/Makefile.in
-index 06b8c5a..9eeb5c7 100644
+index 6747aea..40c7076 100644
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -213,6 +213,7 @@ install-cgi:
+@@ -233,6 +233,7 @@ install-cgi:
  install-other:
  	@test -d $(DESTDIR)$(logfiledir) || $(MKINSTALLDIRS) $(DESTDIR)$(logfiledir)
  	@test -d $(DESTDIR)$(runtimedir) || $(MKINSTALLDIRS) $(DESTDIR)$(runtimedir)
@@ -11,7 +11,7 @@ index 06b8c5a..9eeb5c7 100644
  		file=apachecore.$$ext; \
  		if test -f $$file; then \
 diff --git a/acinclude.m4 b/acinclude.m4
-index 95232f5..5d9d669 100644
+index b6ef442..98f1441 100644
 --- a/acinclude.m4
 +++ b/acinclude.m4
 @@ -45,6 +45,7 @@ AC_DEFUN([APACHE_GEN_CONFIG_VARS],[
@@ -22,7 +22,7 @@ index 95232f5..5d9d669 100644
    APACHE_SUBST(other_targets)
    APACHE_SUBST(progname)
    APACHE_SUBST(prefix)
-@@ -688,6 +689,7 @@ AC_DEFUN([APACHE_EXPORT_ARGUMENTS],[
+@@ -665,6 +666,7 @@ AC_DEFUN([APACHE_EXPORT_ARGUMENTS],[
    APACHE_SUBST_EXPANDED_ARG(runtimedir)
    APACHE_SUBST_EXPANDED_ARG(logfiledir)
    APACHE_SUBST_EXPANDED_ARG(proxycachedir)
@@ -31,7 +31,7 @@ index 95232f5..5d9d669 100644
  
  dnl 
 diff --git a/configure.in b/configure.in
-index a63eada..c8f9aa2 100644
+index 37346b2..f303784 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -41,7 +41,7 @@ dnl Something seems broken here.
@@ -56,7 +56,7 @@ index 2b4a70c..e076f41 100644
  
  #endif /* AP_CONFIG_LAYOUT_H */
 diff --git a/include/http_config.h b/include/http_config.h
-index f9c2d77..c229bc9 100644
+index 77657ae..384a90f 100644
 --- a/include/http_config.h
 +++ b/include/http_config.h
 @@ -757,6 +757,14 @@ AP_DECLARE(char *) ap_server_root_relative(apr_pool_t *p, const char *fname);
@@ -124,10 +124,10 @@ index addfd7e..2389f8f 100644
                               APR_HOOK_MIDDLE);
      dav_hook_find_liveprop(dav_fs_find_liveprop, NULL, NULL, APR_HOOK_MIDDLE);
 diff --git a/server/core.c b/server/core.c
-index 6c4bccf3b2..990cf61d42 100644
+index d135764..c2176b9 100644
 --- a/server/core.c
 +++ b/server/core.c
-@@ -133,6 +133,8 @@ AP_DECLARE_DATA int ap_main_state = AP_SQ_MS_INITIAL_STARTUP;
+@@ -142,6 +142,8 @@ AP_DECLARE_DATA int ap_main_state = AP_SQ_MS_INITIAL_STARTUP;
  AP_DECLARE_DATA int ap_run_mode = AP_SQ_RM_UNKNOWN;
  AP_DECLARE_DATA int ap_config_generation = 0;
  
@@ -136,7 +136,7 @@ index 6c4bccf3b2..990cf61d42 100644
  static void *create_core_dir_config(apr_pool_t *a, char *dir)
  {
      core_dir_config *conf;
-@@ -1413,13 +1415,16 @@ AP_DECLARE(const char *) ap_resolve_env(apr_pool_t *p, const char * word)
+@@ -1444,13 +1446,16 @@ AP_DECLARE(const char *) ap_resolve_env(apr_pool_t *p, const char * word)
      return res_buf;
  }
  
@@ -155,7 +155,7 @@ index 6c4bccf3b2..990cf61d42 100644
  }
  
  /*
-@@ -3120,6 +3125,24 @@ static const char *set_runtime_dir(cmd_parms *cmd, void *dummy, const char *arg)
+@@ -3220,6 +3225,24 @@ static const char *set_runtime_dir(cmd_parms *cmd, void *dummy, const char *arg)
      return NULL;
  }
  
@@ -180,7 +180,7 @@ index 6c4bccf3b2..990cf61d42 100644
  static const char *set_timeout(cmd_parms *cmd, void *dummy, const char *arg)
  {
      const char *err = ap_check_cmd_context(cmd, NOT_IN_DIR_CONTEXT);
-@@ -4414,6 +4437,8 @@ AP_INIT_TAKE1("ServerRoot", set_server_root, NULL, RSRC_CONF | EXEC_ON_READ,
+@@ -4521,6 +4544,8 @@ AP_INIT_TAKE1("ServerRoot", set_server_root, NULL, RSRC_CONF | EXEC_ON_READ,
    "Common directory of server-related files (logs, confs, etc.)"),
  AP_INIT_TAKE1("DefaultRuntimeDir", set_runtime_dir, NULL, RSRC_CONF | EXEC_ON_READ,
    "Common directory for run-time files (shared memory, locks, etc.)"),
@@ -189,7 +189,7 @@ index 6c4bccf3b2..990cf61d42 100644
  AP_INIT_TAKE1("ErrorLog", set_server_string_slot,
    (void *)APR_OFFSETOF(server_rec, error_fname), RSRC_CONF,
    "The filename of the error log"),
-@@ -4941,8 +4966,7 @@ static int core_pre_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptem
+@@ -5055,8 +5080,7 @@ static int core_pre_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptem
  
      if (!saved_server_config_defines)
          init_config_defines(pconf);
@@ -199,7 +199,7 @@ index 6c4bccf3b2..990cf61d42 100644
  
      ap_regcomp_set_default_cflags(AP_REG_DEFAULT);
  
-@@ -5170,6 +5194,27 @@ AP_DECLARE(int) ap_state_query(int query)
+@@ -5303,6 +5327,27 @@ AP_DECLARE(int) ap_state_query(int query)
      }
  }
  
