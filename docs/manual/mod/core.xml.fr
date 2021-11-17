@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE modulesynopsis SYSTEM "../style/modulesynopsis.dtd">
 <?xml-stylesheet type="text/xsl" href="../style/manual.fr.xsl"?>
-<!-- English Revision: 1887384 -->
+<!-- English Revision: 1890425 -->
 <!-- French translation : Lucien GENTIS -->
 <!-- Reviewed by : Vincent Deffontaines -->
 
@@ -3392,19 +3392,18 @@ host</context>
 &lt;/Location&gt;
     </highlight>
 
-    <note><title>Note à propos du slash (/)</title>
-      <p>La signification du caractère slash dépend de l'endroit où il
-      se trouve dans l'URL. Les utilisateurs peuvent être habitués à
-      son comportement dans le système de fichiers où plusieurs slashes
-      successifs sont souvent réduits à un slash unique (en d'autres
-      termes, <code>/home///foo</code> est identique à
-      <code>/home/foo</code>). Dans l'espace de nommage des URLs, ce
-      n'est cependant pas toujours le cas. Pour la directive <directive
-      type="section" module="core">LocationMatch</directive> et la
-      version avec expressions rationnelles de la directive <directive
-      type="section">Location</directive>, vous devez spécifier
-      explicitement les slashes multiples si telle est votre
-      intention.</p>
+      <note><title>Note à propos du slash (/)</title> <p>La signification du
+    caractère slash dépend de l'endroit où il se trouve dans l'URL. Les
+    utilisateurs peuvent être habitués à son comportement dans le système de
+    fichiers où plusieurs slashes successifs sont souvent réduits à un slash
+    unique (en d'autres termes, <code>/home///foo</code> est identique à
+    <code>/home/foo</code>). Dans l'espace de nommage des URLs, ce n'est
+    cependant pas toujours vrai si la directive <directive
+    module="core">MergeSlashes</directive> a été définie à "OFF". Pour la
+    directive <directive type="section" module="core">LocationMatch</directive>
+    et la version avec expressions rationnelles de la directive <directive
+    type="section">Location</directive>, vous devez spécifier explicitement les
+    slashes multiples si les slashes ne sont pas fusionnés.</p>
 
       <p>Par exemple, <code>&lt;LocationMatch "^/abc"&gt;</code> va
       correspondre à l'URL <code>/abc</code> mais pas à l'URL <code>
@@ -3479,16 +3478,18 @@ host</context>
 &lt;/LocationMatch&gt;
 </highlight>
 
-    <note><title>Note à propos du slash '/'</title>
-      <p>La signification du caractère slash '/' dépend de l'endroit où il
-      apparaît dans une URL. Les utilisateurs sont habitués à voir de multiples
-      slashes adjacents réduits à un seul au sein du système de fichiers (par
-      exemple, <code>/home///foo</code> est équivalent à
-      <code>/home/foo</code>). Ce n'est n'est cependant pas toujours le cas au
-      sein des URLs. En effet, si vous souhaitez spécifier plusieurs slashes,
-      vous devez le faire explicitement au sein de la directive <directive
-      type="section" module="core">LocationMatch</directive> et de la version
-      regex de la directive <directive type="section">Location</directive>.</p>
+    <note><title>Note à propos du slash '/'</title> <p>La signification du
+    caractère slash '/' dépend de l'endroit où il apparaît dans une URL. Les
+    utilisateurs sont habitués à voir de multiples slashes adjacents réduits à
+    un seul au sein du système de fichiers (par exemple,
+    <code>/home///foo</code> est équivalent à <code>/home/foo</code>). Ce n'est
+    n'est cependant pas toujours vrai au sein des URLs si la directive
+    <directive module="core">MergeSlashes</directive> a été définie à "OFF". En
+    effet, si vous souhaitez spécifier plusieurs slashes, vous devez le faire
+    explicitement au sein de la directive <directive type="section"
+    module="core">LocationMatch</directive> et de la version regex de la
+    directive <directive type="section">Location</directive>, si les slashes ne
+    sont pas fusionnés.</p>
 
       <p>Par exemple, <code>&lt;LocationMatch "^/abc"&gt;</code> correspondra à
       l'URL <code>/abc</code>, mais pas à l'URL <code>//abc</code>. La directive
@@ -5632,6 +5633,46 @@ configuré pour ne transmettre que des méthodes reconnues aux modules.</p>
 </directivesynopsis>
 
 <directivesynopsis>
+<name>StrictHostCheck</name>
+<description>Détermine si le nom d'hôte contenu dans une requête doit être
+explicitement spécifié au niveau du serveur virtuel qui a pris en compte cette
+dernière.
+             </description>
+<syntax>StrictHostCheck ON|OFF</syntax>
+<default>StrictHostCheck OFF</default>
+<contextlist><context>server config</context><context>virtual host</context>
+</contextlist>
+<compatibility>Disponible à partir de la version 2.4.49 du serveur HTTP Apache.</compatibility>
+
+<usage>
+    <p>Par défaut, le serveur répond aux requêtes quel que soit le nom d'hôte
+    qu'elles contiennent, y compris un nom d'hôte non prévu dans la
+    configuration. Bien que cela soit pratique, il peut s'avérer souhaitable de
+    restreindre les noms d'hôte qu'une application sous-jacente devra prendre en
+    compte car elle va souvent générer des réponses en se référençant elle-même.</p>
+
+    <p>Si la directive <directive>StrictHostCheck</directive> est définie à
+    <em>ON</em>, le serveur générera une erreur HTTP 400 si le nom d'hôte que
+    contient la requête n'a pas été explicitement spécifié par une directive
+    <directive module="core">ServerName</directive> ou <directive
+    module="core">ServerAlias</directive> au niveau du serveur virtuel qui
+    correspond le mieux aux caractéristiques de la connexion entrante.</p>
+
+   <p>Cette directive permet aussi de rechercher une correspondance entre le nom
+   d'hôte de la requête et les noms d'hôte spécifiés au sein de la balise
+   ouvrante <directive module="core">VirtualHost</directive>. Il s'agit
+   cependant d'un mécanisme de configuration relativement obscur qui agit comme
+   une directive <directive module="core">ServerAlias</directive>
+   supplémentaire.</p>
+
+   <p>Cette directive n'a aucun effet dans les serveurs virtuels qui ne sont pas
+   des serveurs par défaut. La valeur héritée de la configuration globale du
+   serveur ou le serveur virtuel par défaut pour l'adresse IP/port de la
+   connexion sous-jacente déterminent la valeur effective.</p>
+</usage>
+</directivesynopsis>
+
+<directivesynopsis>
 <name>MergeSlashes</name>
 <description>Fusion des slashes consécutifs dans les URLs par le serveur.
 </description>
@@ -5650,12 +5691,18 @@ configuré pour ne transmettre que des méthodes reconnues aux modules.</p>
     préférable de conserver ces slashes multiples et consécutifs car ils peuvent
     avoir une signification dans le cas des URLs gérées différemment, par
     exemple par CGI ou par un serveur mandataire. Il convient alors de définir
-    <directive>MergeSlashes</directive> à <em>OFF</em>. Dans ces types de
-    configuration, les expressions rationnelles utilisées dans le
+    <directive>MergeSlashes</directive> à <em>OFF</em> pour conserver les
+    slashes multiples consécutifs, ce qui correspond au comportement
+    traditionnel.</p>
+    <p>
+    Lorsque cette directive est définie à "OFF", les expressions rationnelles utilisées dans le
     fichier de configuration pour effectuer une comparaison de la partie chemin
     de l'URL ((<directive>LocationMatch</directive>,
     <directive>RewriteRule</directive>, ...) doivent en effet tenir compte de la
-    présence éventuelle de slashes multiples et consécutifs.</p>
+    présence éventuelle de slashes multiples et consécutifs. Les sections
+    <directive>Location</directive> à base d'expressions non rationnelles
+    correspondent toujours à des URLs avec slashes fusionnés et ne peuvent pas
+    tenir compte des slashes multiples.</p>
 </usage>
 </directivesynopsis>
 

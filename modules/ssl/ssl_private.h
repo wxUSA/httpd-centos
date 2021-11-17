@@ -252,6 +252,10 @@ void free_bio_methods(void);
 #endif
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L && !defined(LIBRESSL_VERSION_NUMBER)
+#define HAVE_OPENSSL_KEYLOG
+#endif
+
 /* mod_ssl headers */
 #include "ssl_util_ssl.h"
 
@@ -307,8 +311,8 @@ APLOG_USE_MODULE(ssl);
     ((SSLSrvConfigRec *)ap_get_module_config(srv->module_config,  &ssl_module))
 #define myDirConfig(req) \
     ((SSLDirConfigRec *)ap_get_module_config(req->per_dir_config, &ssl_module))
-#define myCtxConfig(sslconn, sc) \
-    (sslconn->is_proxy ? sslconn->dc->proxy : sc->server)
+#define myConnCtxConfig(c, sc) \
+    (c->outgoing ? myConnConfig(c)->dc->proxy : sc->server)
 #define myModConfig(srv) mySrvConfig((srv))->mc
 #define mySrvFromConn(c) myConnConfig(c)->server
 #define myDirConfigFromConn(c) myConnConfig(c)->dc
@@ -529,7 +533,6 @@ typedef struct {
     const char *verify_info;
     const char *verify_error;
     int verify_depth;
-    int is_proxy;
     int disabled;
     enum {
         NON_SSL_OK = 0,        /* is SSL request, or error handling completed */
@@ -619,6 +622,10 @@ typedef struct {
     ap_socache_instance_t *stapling_cache_context;
     apr_global_mutex_t   *stapling_cache_mutex;
     apr_global_mutex_t   *stapling_refresh_mutex;
+#endif
+#ifdef HAVE_OPENSSL_KEYLOG
+    /* Used for logging if SSLKEYLOGFILE is set at startup. */
+    apr_file_t      *keylog_file;
 #endif
 } SSLModConfigRec;
 
@@ -977,6 +984,11 @@ int          ssl_stapling_init_cert(server_rec *, apr_pool_t *, apr_pool_t *,
 #endif
 #ifdef HAVE_SRP
 int          ssl_callback_SRPServerParams(SSL *, int *, void *);
+#endif
+
+#ifdef HAVE_OPENSSL_KEYLOG
+/* Callback used with SSL_CTX_set_keylog_callback. */
+void         modssl_callback_keylog(const SSL *ssl, const char *line);
 #endif
 
 /**  I/O  */
