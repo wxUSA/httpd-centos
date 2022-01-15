@@ -14,7 +14,7 @@
 
 Summary: Apache HTTP Server
 Name: httpd
-Version: 2.4.51
+Version: 2.4.52
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
 Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name}-%{version}.tar.gz
