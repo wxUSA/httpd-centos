@@ -13,11 +13,11 @@
 %endif
 
 Summary: Apache HTTP Server
-Name: httpd
-Version: 2.4.52
+Name: {{{ git_name name=httpd }}}
+Version: {{{ git_version lead=2.4 }}}
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
-Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name}-%{version}.tar.gz
+Source0: {{{ git_dir_pack }}}
 #Source1: index.html
 #Source2: httpd.logrotate
 #Source3: instance.conf
@@ -207,7 +207,7 @@ The mod_session module and associated backends provide an abstract
 interface for storing and accessing per-user session data.
 
 %prep
-%setup -q
+{{{ git_dir_setup_macro }}}
 %patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
