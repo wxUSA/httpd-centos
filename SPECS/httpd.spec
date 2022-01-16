@@ -17,6 +17,7 @@ Name: {{{ git_name name=httpd }}}
 Version: {{{ git_version lead=2.4 }}}
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
+VCS: {{{ git_dir_vcs }}}
 Source0: {{{ git_dir_pack }}}
 #Source1: index.html
 #Source2: httpd.logrotate
@@ -208,6 +209,7 @@ interface for storing and accessing per-user session data.
 
 %prep
 {{{ git_dir_setup_macro }}}
+
 %patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
