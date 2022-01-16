@@ -50,7 +50,6 @@ Release
 /apachecore.dll
 /Apache.sln
 /autom4te.cache
-/httpd.spec
 /tags
 /TAGS
 /*.kdev4
