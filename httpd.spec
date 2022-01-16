@@ -210,9 +210,6 @@ interface for storing and accessing per-user session data.
 %prep
 {{{ git_dir_setup_macro }}}
 
-pwd
-ls -l
-
 %patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
