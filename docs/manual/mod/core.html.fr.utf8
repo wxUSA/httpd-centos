@@ -3178,13 +3178,19 @@ XML</td></tr>
 <tr><th><a href="directive-dict.html#Status">Statut:</a></th><td>Noyau httpd</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>core</td></tr>
 </table>
-    <p>Taille maximale (en octets) du corps d'une requête au format XML.
-    Une valeur de <code>0</code> signifie qu'aucune limite n'est
-    imposée.</p>
+    <p>Taille maximale (en octets) du corps d'une requête au format XML.  Une
+    valeur de <code>0</code> appliquera une limite physique (différente selon
+    que le système est sur 32 ou 64 bits) permettant à XML de s'étaler jusqu'aux
+    limites de la mémoire adressable du système, mais elle n'existe qu'à des
+    fins de compatibilité et il est déconseillé de l'utiliser car elle ne tient
+    pas compte de la mémoire consommée ailleurs et des requêtes simultanées, ce
+    qui pourrait provoquer un dépassement de mémoire global du système.
+    </p>
 
     <p>Exemple :</p>
 
-    <pre class="prettyprint lang-config">LimitXMLRequestBody 0</pre>
+    <pre class="prettyprint lang-config"># Limitation à 1 Mo
+LimitXMLRequestBody 1073741824</pre>
 
 
 
@@ -5643,7 +5649,7 @@ var comments_identifier = 'http://httpd.apache.org/docs/2.4/mod/core.html';
     }
 })(window, document);
 //--><!]]></script></div><div id="footer">
-<p class="apache">Copyright 2021 The Apache Software Foundation.<br />Autorisé sous <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
+<p class="apache">Copyright 2022 The Apache Software Foundation.<br />Autorisé sous <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
 <p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="http://wiki.apache.org/httpd/FAQ">FAQ</a> | <a href="../glossary.html">Glossaire</a> | <a href="../sitemap.html">Plan du site</a></p></div><script type="text/javascript"><!--//--><![CDATA[//><!--
 if (typeof(prettyPrint) !== 'undefined') {
     prettyPrint();

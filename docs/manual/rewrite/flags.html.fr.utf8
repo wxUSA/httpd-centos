@@ -228,7 +228,7 @@ fonctionnalité.</dd>
 <dd>S'il est différent de <code>false</code> ou <code>0</code>, l'attribut
 <code>SameSite</code> est défini à la valeur spécifiée. Les valeurs typiques
 sont <code>None</code>, <code>Lax</code> et <code>Strict</code>. Disponible à
-partir de la version 2.5.1 du serveur HTTP Apache.</dd>
+partir de la version 2.4.47 du serveur HTTP Apache.</dd>
 </dl>
 
 <p>Voici un exemple :</p>
@@ -849,7 +849,7 @@ var comments_identifier = 'http://httpd.apache.org/docs/2.4/rewrite/flags.html';
     }
 })(window, document);
 //--><!]]></script></div><div id="footer">
-<p class="apache">Copyright 2021 The Apache Software Foundation.<br />Autorisé sous <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
+<p class="apache">Copyright 2022 The Apache Software Foundation.<br />Autorisé sous <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
 <p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="http://wiki.apache.org/httpd/FAQ">FAQ</a> | <a href="../glossary.html">Glossaire</a> | <a href="../sitemap.html">Plan du site</a></p></div><script type="text/javascript"><!--//--><![CDATA[//><!--
 if (typeof(prettyPrint) !== 'undefined') {
     prettyPrint();

@@ -657,15 +657,11 @@
 		de pushes pour le serveur virtuel considéré. 
             </p>
             <p>
-                Le journal des pushes enregistre un condensé (sous la forme d'un
-		nombre de 64 bits) des ressources préchargées (leurs URLs) afin
-		d'éviter les duplications de pushes pour une même connexion.
-		Cependant, ces données ne sont pas conservées, et les clients
-		qui ouvrent une nouvelle connexion se verront à nouveau affecter les
-		mêmes pushes. A ce titre, une étude est en cours pour permettre
-		au client de supprimer le condensé des ressources qu'il possède
-		déjà, et par là-même de réinitialiser le journal des pushes à
-		chaque nouvelle connexion.
+		Le journal des pushes enregistre un condensé des ressources
+		préchargées (leurs URLs) afin d'éviter les duplications de
+		pushes pour une même connexion.  Cependant, ces données ne sont
+		pas conservées, et les clients qui ouvrent une nouvelle
+		connexion se verront à nouveau affecter les mêmes pushes.
             </p>
             <p>
                 Si la taille maximale est atteinte, les nouvelles entrées
@@ -1096,7 +1092,7 @@ var comments_identifier = 'http://httpd.apache.org/docs/2.4/mod/mod_http2.html';
     }
 })(window, document);
 //--><!]]></script></div><div id="footer">
-<p class="apache">Copyright 2021 The Apache Software Foundation.<br />Autorisé sous <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
+<p class="apache">Copyright 2022 The Apache Software Foundation.<br />Autorisé sous <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
 <p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="http://wiki.apache.org/httpd/FAQ">FAQ</a> | <a href="../glossary.html">Glossaire</a> | <a href="../sitemap.html">Plan du site</a></p></div><script type="text/javascript"><!--//--><![CDATA[//><!--
 if (typeof(prettyPrint) !== 'undefined') {
     prettyPrint();

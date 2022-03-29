@@ -528,6 +528,11 @@ static APR_INLINE int connections_above_limit(int *busy)
     return 1;
 }
 
+static APR_INLINE int should_enable_listensocks(void)
+{
+    return !dying && listeners_disabled() && !connections_above_limit(NULL);
+}
+
 static void close_socket_nonblocking_(apr_socket_t *csd,
                                       const char *from, int line)
 {
@@ -774,7 +779,7 @@ static apr_status_t decrement_connection_count(void *cs_)
     is_last_connection = !apr_atomic_dec32(&connection_count);
     if (listener_is_wakeable
             && ((is_last_connection && listener_may_exit)
-                || (listeners_disabled() && !connections_above_limit(NULL)))) {
+                || should_enable_listensocks())) {
         apr_pollset_wakeup(event_pollset);
     }
     if (dying) {
@@ -2002,9 +2007,7 @@ do_maintenance:
             }
         }
 
-        if (listeners_disabled()
-                && !workers_were_busy
-                && !connections_above_limit(NULL)) {
+        if (!workers_were_busy && should_enable_listensocks()) {
             enable_listensocks();
         }
     } /* listener main loop */
@@ -2066,7 +2069,7 @@ static void *APR_THREAD_FUNC worker_thread(apr_thread_t * thd, void *dummy)
     ap_update_child_status_from_indexes(process_slot, thread_slot,
                                         SERVER_STARTING, NULL);
 
-    while (!workers_may_exit) {
+    for (;;) {
         apr_socket_t *csd = NULL;
         event_conn_state_t *cs;
         timer_event_t *te = NULL;
@@ -2080,6 +2083,12 @@ static void *APR_THREAD_FUNC worker_thread(apr_thread_t * thd, void *dummy)
                              "shutdown process gracefully.");
                 signal_threads(ST_GRACEFUL);
                 break;
+            }
+            /* A new idler may have changed connections_above_limit(),
+             * let the listener know and decide.
+             */
+            if (listener_is_wakeable && should_enable_listensocks()) {
+                apr_pollset_wakeup(event_pollset);
             }
             is_idle = 1;
         }
@@ -2192,11 +2201,11 @@ static void create_listener_thread(thread_starter * ts)
     my_info = (proc_info *) ap_malloc(sizeof(proc_info));
     my_info->pslot = my_child_num;
     my_info->tslot = -1;      /* listener thread doesn't have a thread slot */
-    rv = apr_thread_create(&ts->listener, thread_attr, listener_thread,
-                           my_info, pruntime);
+    rv = ap_thread_create(&ts->listener, thread_attr, listener_thread,
+                          my_info, pruntime);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ALERT, rv, ap_server_conf, APLOGNO(00474)
-                     "apr_thread_create: unable to create listener thread");
+                     "ap_thread_create: unable to create listener thread");
         /* let the parent decide how bad this really is */
         clean_child_exit(APEXIT_CHILDSICK);
     }
@@ -2387,12 +2396,12 @@ static void *APR_THREAD_FUNC start_threads(apr_thread_t * thd, void *dummy)
             /* We let each thread update its own scoreboard entry.  This is
              * done because it lets us deal with tid better.
              */
-            rv = apr_thread_create(&threads[i], thread_attr,
-                                   worker_thread, my_info, pruntime);
+            rv = ap_thread_create(&threads[i], thread_attr,
+                                  worker_thread, my_info, pruntime);
             if (rv != APR_SUCCESS) {
                 ap_log_error(APLOG_MARK, APLOG_ALERT, rv, ap_server_conf,
                              APLOGNO(03104)
-                             "apr_thread_create: unable to create worker thread");
+                             "ap_thread_create: unable to create worker thread");
                 /* let the parent decide how bad this really is */
                 clean_child_exit(APEXIT_CHILDSICK);
             }
@@ -2527,6 +2536,17 @@ static void child_main(int child_num_arg, int child_bucket)
     apr_pool_create(&pchild, pconf);
     apr_pool_tag(pchild, "pchild");
 
+#if AP_HAS_THREAD_LOCAL
+    if (!one_process) {
+        apr_thread_t *thd = NULL;
+        if ((rv = ap_thread_main_create(&thd, pchild))) {
+            ap_log_error(APLOG_MARK, APLOG_EMERG, rv, ap_server_conf, APLOGNO(10377)
+                         "Couldn't initialize child main thread");
+            clean_child_exit(APEXIT_CHILDFATAL);
+        }
+    }
+#endif
+
     /* close unused listeners and pods */
     for (i = 0; i < retained->mpm->num_buckets; i++) {
         if (i != child_bucket) {
@@ -2596,11 +2616,11 @@ static void child_main(int child_num_arg, int child_bucket)
     ts->child_num_arg = child_num_arg;
     ts->threadattr = thread_attr;
 
-    rv = apr_thread_create(&start_thread_id, thread_attr, start_threads,
-                           ts, pchild);
+    rv = ap_thread_create(&start_thread_id, thread_attr, start_threads,
+                          ts, pchild);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ALERT, rv, ap_server_conf, APLOGNO(00480)
-                     "apr_thread_create: unable to create worker thread");
+                     "ap_thread_create: unable to create worker thread");
         /* let the parent decide how bad this really is */
         clean_child_exit(APEXIT_CHILDSICK);
     }
@@ -2735,6 +2755,10 @@ static int make_child(server_rec * s, int slot, int bucket)
     }
 
     if (!pid) {
+#if AP_HAS_THREAD_LOCAL
+        ap_thread_current_after_fork();
+#endif
+
         my_bucket = &all_buckets[bucket];
 
 #ifdef HAVE_BINDPROCESSOR
@@ -3045,7 +3069,7 @@ static void server_main_loop(int remaining_children_to_start)
 
                 event_note_child_killed(child_slot, 0, 0);
                 ps = &ap_scoreboard_image->parent[child_slot];
-                if (!ps->quiescing)
+                if (ps->quiescing != 2)
                     retained->active_daemons--;
                 ps->quiescing = 0;
                 /* NOTE: We don't dec in the (child_slot < 0) case! */
