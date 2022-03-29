@@ -1,12 +1,5 @@
-
-Reduce size of httpd binary by telling linker to export all symbols
-from libmain.a, rather than bloating the symbol table with ap_hack_*
-to do so indirectly.
-
-Upstream: https://svn.apache.org/r1861685 (as new default-off configure option)
-
 diff --git a/Makefile.in b/Makefile.in
-index 40c7076..ac98e5f 100644
+index bd8045c..d6733a5 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -4,8 +4,15 @@ CLEAN_SUBDIRS = test
@@ -40,10 +33,10 @@ index 8111877..f00bb3f 100644
  	eoc_bucket.c eor_bucket.c core_filters.c \
  	util_expr_parse.c util_expr_scan.c util_expr_eval.c
 diff --git a/server/main.c b/server/main.c
-index 62e06df..17c09ee 100644
+index 7da7aa2..e63d2eb 100644
 --- a/server/main.c
 +++ b/server/main.c
-@@ -835,17 +835,3 @@ int main(int argc, const char * const argv[])
+@@ -857,17 +857,3 @@ int main(int argc, const char * const argv[])
      return !OK;
  }
  
