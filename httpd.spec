@@ -66,7 +66,7 @@ Patch21: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 Patch22: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-mod_systemd.patch
 Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.53-export.patch
 Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-corelimit.patch
-Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-selinux.patch
+Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.54-selinux.patch
 #Patch26: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-gettid.patch
 Patch27: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-icons.patch
 Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-cachehardmax.patch
