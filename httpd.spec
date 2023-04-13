@@ -14,8 +14,8 @@
 
 Summary: Apache HTTP Server
 Name: {{{ git_name name=httpd }}}
-Version: 2.4.54
-Release: 2%{?dist}
+Version: 2.4.57
+Release: 1%{?dist}
 URL: https://httpd.apache.org/
 VCS: {{{ git_dir_vcs }}}
 Source0: {{{ git_dir_pack }}}
