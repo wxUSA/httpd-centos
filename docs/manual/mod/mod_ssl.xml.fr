@@ -1114,9 +1114,9 @@ indépendamment de l'algorithme d'authentification utilisé.
 l'entité finale au fichier de certificat, ce qui permet de se passer
 d'une directive <directive
 module="mod_ssl">SSLCertificateKeyFile</directive> séparée. Cette
-pratique est cependant fortement déconseillée. En effet, les fichiers de
-certificats qui contiennent de tels clés embarquées doivent être définis
-avant les certificats en utilisant un fichier de clé séparé. En outre,
+pratique est cependant fortement déconseillée. Dans ce cas, les fichiers de
+certificat qui contiennent de telles clés embarquées doivent être définis
+après les certificats qui utilisent un fichier de clé séparé. En outre,
 si la clé est chiffrée, une boîte de dialogue pour entrer le mot de
 passe de la clé s'ouvre au démarrage du serveur.
 </p>
@@ -1217,11 +1217,11 @@ une directive <directive>SSLCertificateFile</directive> correspondante.
 </p>
 
 <p>
-La clé privé peut aussi être ajoutée au fichier défini par la directive
+La clé privée peut aussi être ajoutée au fichier défini par la directive
 <directive module="mod_ssl">SSLCertificateFile</directive>, mais cette
-pratique est fortement déconseillée. En effet, les fichiers de
+pratique est fortement déconseillée. Dans ce cas, les fichiers de
 certificats qui comportent une telle clé doivent être définis après les
-certificats en utilisant un fichier de clé séparé.</p>
+certificats qui utilisent un fichier de clé séparé.</p>
 
 <p>Plutôt que de stocker des clés privées dans des fichiers, il est possible
 d'identifier une clé privée via un identifiant stocké dans un jeton.

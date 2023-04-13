@@ -363,4 +363,7 @@ Release
 # Intellij
 /.idea/
 
+test/gen
+test/pyhttpd/config.ini
+__pycache__
 

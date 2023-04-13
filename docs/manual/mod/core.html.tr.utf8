@@ -1358,6 +1358,11 @@ DocumentRoot "/var/www/${servername}/htdocs"</pre>
 &lt;/IfDefine&gt;</pre>
 
 
+    <div class="warning"><h3>Ek Bilgi</h3>
+      <p>Bu yönerge, çalışma zamanında değil, yapılandırma işlemi sırasında
+      değerlendirilir. Sonuç olarak, bu yönerge bir <code class="directive"><a href="#if">&lt;If&gt;</a></code> bölümü içine alınarak koşullu olarak
+      değerlendirilemez.</p>
+    </div>
 
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -1695,7 +1700,7 @@ ErrorLogFormat "[%{uc}t] [%-m:%-l] [R:%L] [C:%{C}L] %7F: %E: %M"
 ErrorLogFormat request "[%{uc}t] [R:%L] Request %k on C:%{c}L pid:%P tid:%T"
 ErrorLogFormat request "[%{uc}t] [R:%L] UA:'%+{User-Agent}i'"
 ErrorLogFormat request "[%{uc}t] [R:%L] Referer:'%+{Referer}i'"
-ErrorLogFormat connection "[%{uc}t] [C:%{c}L] local\ %a remote\ %A"</pre>
+ErrorLogFormat connection "[%{uc}t] [C:%{c}L] remote\ %a local\ %A"</pre>
 
 
 
@@ -2249,6 +2254,13 @@ takdirde uygulanacak yönergeleri barındırır.</td></tr>
     &lt;If&gt; sonrasında atanan <code>CONTENT_TYPE</code> gibi belli
     değişkenler ve diğer yanıt başlıkları zaten yorumlanmış olacaklarından bu
     yönerge için kullanılabilir olmayacaktır.
+    </div>
+
+    <div class="warning"><code class="directive">Define</code>,
+    <code class="directive">Include</code> ve <code class="directive">Error</code> gibi
+    yapılandırma ayrıştırılırken etkili olan yönergeler, bir <code class="directive">&lt;If&gt;</code> yapılandırma bölümü içine alınarak koşullu
+    hale getirilemez. Bu bölümler, çalışma anında nasıl değerlendirildiklerine
+    bakılmaksızın, her zaman yapılandırmanın bir parçasıdır.
     </div>
 
 
@@ -5235,7 +5247,7 @@ var comments_identifier = 'http://httpd.apache.org/docs/2.4/mod/core.html';
     }
 })(window, document);
 //--><!]]></script></div><div id="footer">
-<p class="apache">Copyright 2022 The Apache Software Foundation.<br /><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a> altında lisanslıdır.</p>
+<p class="apache">Copyright 2023 The Apache Software Foundation.<br /><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a> altında lisanslıdır.</p>
 <p class="menu"><a href="../mod/">Modüller</a> | <a href="../mod/directives.html">Yönergeler</a> | <a href="http://wiki.apache.org/httpd/FAQ">SSS</a> | <a href="../glossary.html">Terimler</a> | <a href="../sitemap.html">Site Haritası</a></p></div><script type="text/javascript"><!--//--><![CDATA[//><!--
 if (typeof(prettyPrint) !== 'undefined') {
     prettyPrint();

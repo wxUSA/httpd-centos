@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE modulesynopsis SYSTEM "../style/modulesynopsis.dtd">
 <?xml-stylesheet type="text/xsl" href="../style/manual.fr.xsl"?>
-<!-- English Revision: 1901492 -->
+<!-- English Revision: 1908814:1909085 (outdated) -->
 <!-- French translation : Lucien GENTIS -->
 <!-- Reviewed by : Vincent Deffontaines -->
 
@@ -1146,6 +1146,14 @@ RewriteRule  "^/$"                 "/homepage.std.html"  [L]
 	sera renvoyée. Dans le cas contraire, ce sera la page d'accueil
 	standard.</p>
 
+	<p>Par défaut, plusieurs directives <directive>RewriteCond</directive>
+	sont évaluées de manière séquentielle et combinées à l'aide d'un
+	<strong>ET</strong> logique. Si une condition n'est pas vérifiée et en
+	l'absence d'un opérateur logique <strong><code>OU</code></strong>,
+	l'ensemble du jeu de règles est abandonné et les conditions restantes ne
+	sont pas évaluées.
+        </p>
+
 </usage>
 
 </directivesynopsis>
@@ -1259,18 +1267,18 @@ du contexte de <em>répertoire</em>.</li>
 <li>Par défaut, mod_rewrite écrase les règles précédentes au sein de <a
 href="../sections.html#merging">sections combinées</a> appartenant au même
 contexte. Pour modifier ce comportement, on peut utiliser la directive
-<directive module="rewrite">RewriteOptions</directive> pour définir par exemple
-l'option <em>Inherit</em>.</li>
+<directive module="mod_rewrite">RewriteOptions</directive> pour définir par
+exemple l'option <em>Inherit</em>.</li>
 
-<li>La directive <directive module="rewrite">RewriteOptions</directive> permet
-aussi de contrôler le comportement des sections définies au même niveau
+<li>La directive <directive module="mod_rewrite">RewriteOptions</directive>
+permet aussi de contrôler le comportement des sections définies au même niveau
 d'imbrication dans la configuration. Dans l'exemple suivant, par défaut seule la
 règle RewriteRules définie dans le second bloc <directive
 module="core">If</directive> est prise en compte car celle définie dans le
 premier bloc est écrasée. Définir <directive
-module="rewrite">RewriteOptions</directive> Inherit force mod_rewrite à combiner
-les deux sections en prenant en compte les deux règles et pas seulement la
-dernière.</li>
+module="mod_rewrite">RewriteOptions</directive> Inherit force mod_rewrite à
+combiner les deux sections en prenant en compte les deux règles et pas seulement
+la dernière.</li>
 </ul>
 <example>
 <highlight language="config">
@@ -1454,6 +1462,17 @@ substitution !
 	dans les références arrières <em>avant</em>
 	d'appliquer la transformation. <em><a
         href="../rewrite/flags.html#flag_b">détails ...</a></em></td>
+    </tr>
+    <tr>
+        <td>BCTLS</td>
+        <td>Identique à [B], mais n'échappe que les espaces et les caractères de
+	contrôle. <em><a href="../rewrite/flags.html#flag_bctls">détails ...</a></em></td>
+    </tr>
+    <tr>
+        <td>BNE</td>
+	<td>Les caractères de [B] ou [BCTLS] qui <strong>ne doivent pas</strong>
+	être échappés.  <em><a href="../rewrite/flags.html#flag_bne">détails
+	...</a></em></td>
     </tr>
     <tr>
         <td>backrefnoplus|BNP</td>
