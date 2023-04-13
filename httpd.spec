@@ -74,7 +74,7 @@ Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 Patch34: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-socket-activation.patch
 Patch38: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslciphdefault.patch
 #Patch39: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslprotdefault.patch
-Patch40: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861269.patch
+#Patch40: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861269.patch
 Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861793+.patch
 #Patch42: httpd-2.4.43-r1828172+.patch
 # Bug fixes
@@ -227,7 +227,7 @@ interface for storing and accessing per-user session data.
 %patch34 -p1 -b .socketactivation
 %patch38 -p1 -b .sslciphdefault
 #%patch39 -p1 -b .sslprotdefault
-%patch40 -p1 -b .r1861269
+#%patch40 -p1 -b .r1861269
 %patch41 -p1 -b .r1861793+
 #%patch42 -p1 -b .r1828172+
 
