@@ -221,12 +221,8 @@ interface for storing and accessing per-user session data.
 %patch34 -p1 -b .socketactivation
 %patch38 -p1 -b .sslciphdefault
 #%patch39 -p1 -b .sslprotdefault
-#%patch40 -p1 -b .r1861269
-%patch41 -p1 -b .r1861793+
-#%patch42 -p1 -b .r1828172+
 
-#%patch60 -p1 -b .enable-sslv3
-#%patch61 -p1 -b .r1878890
+%patch61 -p1 -b .r1916863
 
 # Patch in the vendor string
 sed -i '/^#define PLATFORM/s/Unix/Linux/' os/unix/os.h
