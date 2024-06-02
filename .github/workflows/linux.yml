@@ -67,24 +67,24 @@ jobs:
           # -------------------------------------------------------------------------
           - name: GCC 10 maintainer-mode w/-Werror, install + VPATH
             config: --enable-mods-shared=reallyall --enable-maintainer-mode
-            notest-cflags: -Werror -O2 -Wno-deprecated-declarations
+            notest-cflags: -Werror -O2
             env: |
               CC=gcc-10
               TEST_VPATH=1
               TEST_INSTALL=1
               SKIP_TESTING=1
           # -------------------------------------------------------------------------
-          - name: All-modules, APR 1.7.3, APR-util 1.6.3
+          - name: All-modules, APR 1.7.4, APR-util 1.6.3
             config: --enable-mods-shared=reallyall
             env: |
-              APR_VERSION=1.7.3
+              APR_VERSION=1.7.4
               APU_VERSION=1.6.3
               APU_CONFIG="--with-crypto --with-ldap"
           # -------------------------------------------------------------------------
-          - name: APR 1.7.x, APR-util 1.7.x
+          - name: APR 1.8.x, APR-util 1.7.x
             config: --enable-mods-shared=reallyall
             env: |
-              APR_VERSION=1.7.x
+              APR_VERSION=1.8.x
               APU_VERSION=1.7.x
               APU_CONFIG="--with-crypto --with-ldap"
               CLEAR_CACHE=1
@@ -139,11 +139,11 @@ jobs:
               TESTS="t/modules/dav.t"
             pkgs: litmus
           # -------------------------------------------------------------------------
-          - name: APR 1.7.3, APR-util 1.6.3, LDAP
+          - name: APR 1.7.4, APR-util 1.6.3, LDAP
             config: --enable-mods-shared=reallyall
             pkgs: ldap-utils
             env: |
-              APR_VERSION=1.7.3
+              APR_VERSION=1.7.4
               APU_VERSION=1.6.3
               APU_CONFIG="--with-crypto --with-ldap"
               TEST_MALLOC=1
@@ -178,20 +178,18 @@ jobs:
               TEST_ASAN=1
               CLEAR_CACHE=1
           # -------------------------------------------------------------------------
-          ### TODO: if: *condition_not_24x
-          ### TODO: fails in tests.
-          # - name: HTTP/2 test suite
-          #   config: --enable-mods-shared=reallyall --with-mpm=event --enable-mpms-shared=all
-          #   pkgs: curl python3-pytest nghttp2-client python3-cryptography python3-requests
-          #   env: |
-          #     APR_VERSION=1.7.3
-          #     APU_VERSION=1.6.3
-          #     APU_CONFIG="--with-crypto"
-          #     NO_TEST_FRAMEWORK=1
-          #     TEST_INSTALL=1
-          #     TEST_H2=1
-          #     TEST_CORE=1
-          #     TEST_PROXY=1
+          - name: HTTP/2 test suite
+            config: --enable-mods-shared=reallyall --with-mpm=event --enable-mpms-shared=all
+            pkgs: curl python3-pytest nghttp2-client python3-cryptography python3-requests python3-multipart python3-filelock python3-websockets
+            env: |
+              APR_VERSION=1.7.4
+              APU_VERSION=1.6.3
+              APU_CONFIG="--with-crypto"
+              NO_TEST_FRAMEWORK=1
+              TEST_INSTALL=1
+              TEST_H2=1
+              TEST_CORE=1
+              TEST_PROXY=1
           # -------------------------------------------------------------------------
           ### TODO: if: *condition_not_24x
           ### TODO: pebble install is broken.
@@ -201,7 +199,7 @@ jobs:
           #     python3-pytest nghttp2-client python3-cryptography python3-requests python3-filelock
           #     golang-1.17 curl
           #   env: |
-          #     APR_VERSION=1.7.3
+          #     APR_VERSION=1.7.4
           #     APU_VERSION=1.6.3
           #     APU_CONFIG="--with-crypto"
           #     GOROOT=/usr/lib/go-1.17
@@ -210,19 +208,17 @@ jobs:
           #     TEST_MD=1
           # -------------------------------------------------------------------------
           ### TODO: if: *condition_not_24x
-          ### TODO: fix caching here.
-          ### TODO: make it pass (see e.g. https://github.com/apache/httpd/actions/runs/4467336705/jobs/7846666316)
-          #- name: MOD_TLS test suite
-          #  config: --enable-mods-shared=reallyall --with-mpm=event --enable-mpms-shared=event
-          #  pkgs: curl python3-pytest nghttp2-client python3-cryptography python3-requests cargo cbindgen
-          #  env: |
-          #    APR_VERSION=1.7.3
-          #    APU_VERSION=1.6.3
-          #    APU_CONFIG="--with-crypto"
-          #    NO_TEST_FRAMEWORK=1
-          #    TEST_INSTALL=1
-          #    TEST_MOD_TLS=1
-          #    CLEAR_CACHE=1
+          - name: MOD_TLS test suite
+            config: --enable-mods-shared=reallyall --with-mpm=event --enable-mpms-shared=event
+            pkgs: curl python3-pytest nghttp2-client python3-cryptography python3-requests python3-multipart python3-filelock python3-websockets cargo cbindgen
+            env: |
+              APR_VERSION=1.7.4
+              APU_VERSION=1.6.3
+              APU_CONFIG="--with-crypto"
+              RUSTLS_VERSION="v0.10.0"
+              NO_TEST_FRAMEWORK=1
+              TEST_INSTALL=1
+              TEST_MOD_TLS=1
           # -------------------------------------------------------------------------
           ### TODO if: *condition_not_24x
           ### TODO: Fails because :i386 packages are not being found.
@@ -240,13 +236,19 @@ jobs:
           #     APU_VERSION=1.6.3
           # APU_CONFIG="--with-crypto --with-ldap"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       NOTEST_CFLAGS: ${{ matrix.notest-cflags }}
       CONFIG: ${{ matrix.config }}
     name: ${{ matrix.name }}
     steps:
     - name: Set environment variables
-      run: echo "${{ matrix.env }}" >> $GITHUB_ENV
+      run: |
+        echo "${{ matrix.env }}" >> $GITHUB_ENV
+        echo JOBID=`echo "${{ matrix.notest-cflags }} ${{ matrix.env }} ${{ matrix.config }}'"| md5sum - | sed 's/ .*//'` >> $GITHUB_ENV
+    # https://github.com/actions/runner-images/issues/9491#issuecomment-1989718917
+    - name: Workaround ASAN issue in Ubuntu 22.04
+      run: sudo sysctl vm.mmap_rnd_bits=28
     - name: apt refresh
       run: sudo apt-get -o Acquire::Retries=5 update
     - name: Install prerequisites
@@ -255,35 +257,31 @@ jobs:
                     liblua5.3-dev libbrotli-dev libcurl4-openssl-dev     
                     libnghttp2-dev libjansson-dev libpcre2-dev gdb
                     perl-doc ${{ matrix.pkgs }}
-    - uses: actions/checkout@v3
-    - name: Cache APR build
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-apru
+    - uses: actions/checkout@v4
+    - name: Cache installed libraries
+      uses: actions/cache@v4
       with:
         path: ~/root
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('/home/runner/root/.key-*') }}
+        key: cache-libs-${{ env.JOBID }}
     - name: Cache CPAN modules
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-cpan
+      uses: actions/cache@v4
       with:
         path: ~/perl5
-        key: ${{ runner.os }}-cpan-${{ env.cache-name }}-${{ hashFiles('/home/runner/perl5/.key') }}
+        key: cache-cpan-${{ env.JOBID }}
     - name: Configure environment
       run: ./test/travis_before_linux.sh
       timeout-minutes: 15
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: config.log ${{ matrix.node-version }}
+        name: config.log-${{ env.JOBID }}
         path: |
           /home/runner/build/**/config.log
     - name: Build and test
       run: ./test/travis_run_linux.sh
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: error_log ${{ matrix.node-version }}
+        name: error_log-${{ env.JOBID }}
         path: test/perl-framework/t/logs/error_log
 

@@ -29,7 +29,9 @@ Release history:
     [NOTE that x.{odd}.z versions are strictly Alpha/Beta releases,
           while x.{even}.z versions are Stable/GA releases.]
 
-    2.4.58  : In development
+    2.4.60  : In development
+    2.4.59  : Released on April 04, 2024
+    2.4.58  : Released on October 19, 2023
     2.4.57  : Released on April 06, 2023
     2.4.56  : Released on March 07, 2023
     2.4.55  : Released on January 17, 2023
@@ -148,11 +150,18 @@ CURRENT RELEASE NOTES:
 
 RELEASE SHOWSTOPPERS:
 
-
 PATCHES ACCEPTED TO BACKPORT FROM TRUNK:
   [ start all new proposals below, under PATCHES PROPOSED. ]
 
-
+   *) mod_ssl: Fix a regression that causes the default DH parameters for a key
+     no longer set and thus effectively disabling DH ciphers when no explicit
+     DH parameters are set. PR 68863
+      Trunk version of patch:
+         https://svn.apache.org/r1916863
+      Backport version for 2.4.x of patch:
+       Trunk version of patch works
+       svn merge -c 1916863 ^/httpd/httpd/trunk .
+      +1: rpluem, jorton, ylavic
 
 PATCHES PROPOSED TO BACKPORT FROM TRUNK:
   [ New proposals should be added at the end of the list ]
@@ -165,44 +174,98 @@ PATCHES PROPOSED TO BACKPORT FROM TRUNK:
         https://svn.apache.org/r1589993
         https://svn.apache.org/r1591012
         https://svn.apache.org/r1596108
+        https://svn.apache.org/r1745033
+        https://svn.apache.org/r1913958
+        https://svn.apache.org/r1913959
+        https://svn.apache.org/r1914091
+        https://svn.apache.org/r1914281
      Backport version for 2.4.x of patch:
-        https://svn.apache.org/repos/asf/httpd/httpd/patches/2.4.x/httpd-2.4-ldap-search.patch
-     +1: minfrin, jim,
-     jailletc36: r1745033 seems related and should in included
+        https://svn.apache.org/repos/asf/httpd/httpd/patches/2.4.x/httpd-2.4-ldap-search5.patch
+     +1: minfrin
 
-  *) core: Add formats %{z} and %{strftime-format} to ErrorLogFormat, and make
-     sure that if the format is configured early enough it applies to every log
-     line.  PR 62161.
-     trunk patch: https://svn.apache.org/r1908380
-                  https://svn.apache.org/r1908383
-                  https://svn.apache.org/r1908384
-                  https://svn.apache.org/r1908388
-                  https://svn.apache.org/r1908389
-                  https://svn.apache.org/r1908390
-                  https://svn.apache.org/r1908393
-                  https://svn.apache.org/r1908394
-                  https://svn.apache.org/r1908406
-                  https://svn.apache.org/r1908407
-                  https://svn.apache.org/r1908556
-                  https://svn.apache.org/r1908557
-     2.4.x patch: svn merge -c 1908380,1908383-1908384,1908388-1908390,1908393-1908394,1908406-1908407,1908556-1908557 ^/httpd/httpd/trunk .
-                  (merge works modulo MMN, or patch/PR below)
-                  https://patch-diff.githubusercontent.com/raw/apache/httpd/pull/350.diff
-                  https://github.com/apache/httpd/pull/350
-     +1: ylavic, rpluem,
+  *) mod_proxy: prevent bad busy values and problems with bybusyness
+     Trunk version of patch:
+       https://svn.apache.org/r1912245
+       https://svn.apache.org/r1913930
+        svn merge -c 1912245 ^/httpd/httpd/trunk .
+        svn merge -c 1913930 ^/httpd/httpd/trunk .
+     +1: minfrin
+     minfrin: r1913930 added, votes reset, mmn bump needed
+     ylavic: not sure since it's not public (i.e. in mod_proxy.h)?
+     minfrin: true, mmn bump not needed
+     ylavic: new proposal in https://github.com/apache/httpd/pull/396
+     -1: jfclere The new proposal is NOT in trunk
+
+   *) mod_ldap: Add a hint to install the apr_ldap module on init failure.
+      trunk patch: http://svn.apache.org/r1914038
+      2.4.x patch: svn merge -c r1914038 ^/httpd/httpd/trunk .
+      +1: minfrin
+
+   *) Add an option to specify a source address. PR32524
+      trunk patch: http://svn.apache.org/r1914045
+      2.4.x patch: https://svn.apache.org/repos/asf/httpd/httpd/patches/2.4.x/httpd-2.4-ab-source-address.patch
+      +1: minfrin
+      -1: jorton, appears to be a duplicate of the existing -B option
+
+   *) mod_proxy: Don't reset the balancer when we create a new child
+      and don't change shared memory mod_lbmethod_bytraffic is not using.
+      trunk patch: https://svn.apache.org/r1916004
+      2.4.x patch: svn merge -c 1916004  ^/httpd/httpd/trunk .
+      +1: jfclere,
+
+   *) mod_cgi/mod_cgid: Factor out common code, and add optional
+      support for fd passing in mod_cgid, fixing stderr handling for
+      mod_cgid on Unix platforms (PR 54211). In the default configuration,
+      behaviour should not change significantly in either module.
+      Trunk version of patch:
+          https://svn.apache.org/r1862968 
+          https://svn.apache.org/r1863191 
+          https://svn.apache.org/r1867878 
+          https://svn.apache.org/r1867882 
+          https://svn.apache.org/r1867968 
+          https://svn.apache.org/r1867971 
+          https://svn.apache.org/r1869421 
+          https://svn.apache.org/r1874491 
+          https://svn.apache.org/r1874511 
+          https://svn.apache.org/r1879119 
+          https://svn.apache.org/r1879136 
+          https://svn.apache.org/r1879860 
+          https://svn.apache.org/r1881459 
+          https://svn.apache.org/r1881559 
+          https://svn.apache.org/r1867970 
+      2.4.x version of patch:
+            https://patch-diff.githubusercontent.com/raw/apache/httpd/pull/209.patch
+      PR: https://github.com/apache/httpd/pull/209
+      +1: jorton, ylavic, 
+
+   *) core: Add support for IPv6 link-local addresses with APR 1.7+
+      Trunk version of patch: 
+         https://svn.apache.org/r1816609
+         https://svn.apache.org/r1818030
+      Backport version for 2.4.x of patch:
+         https://patch-diff.githubusercontent.com/raw/apache/httpd/pull/440.patch
+      PR: https://github.com/apache/httpd/pull/440
+      +1: jorton, ylavic, 
+
+   *) core: On Linux use the real thread id in error logging where available.
+      Trunk version of patch:
+         https://svn.apache.org/r1917578
+      2.4.x version of patch:
+        Trunk version of patch works
+        svn merge -c 1917578 ^/httpd/httpd/trunk .
+      +1: jorton, ylavic, 
+
+   *) mod_http2: sync with github module. Add async handling
+      on newer httpd for blocked connections, fix yield handling.
+      Trunk version of patch:
+         https://svn.apache.org/r1918003
+      2.4.x version of patch:
+        Trunk version of patch works
+        svn merge -c 1918003 ^/httpd/httpd/trunk .
+      +1: icing,
 
 PATCHES/ISSUES THAT ARE BEING WORKED
   [ New entries should be added at the START of the list ]
-
-  *) mod_xml2enc: Correctly handle Microsoft OOXML documents.  PR 64339
-     trunk patch: http://svn.apache.org/r1884505
-     2.4.x patch: svn merge -c 1884505 ^/httpd/httpd/trunk .
-     +1:
-     jailletc36: there has been some discussion about how to fix the issue.
-     I'm not sure that the commit above is the best solution
-     and other alternatives have been discussed in PR 64339.  If r1884505
-     is not the right fix, then it should be removed from trunk.
-     Putting it here is a way to revive the discussion
 
   *) core: Initialize the request fields on read failure to avoid NULLs.
      trunk patch: http://svn.apache.org/r1893030
