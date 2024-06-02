@@ -14,7 +14,7 @@
 
 Summary: Apache HTTP Server
 Name: {{{ git_name name=httpd }}}
-Version: 2.4.57
+Version: 2.4.59
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
 VCS: {{{ git_dir_vcs }}}
@@ -69,20 +69,13 @@ Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.54-selinux.patch
 #Patch26: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-gettid.patch
 Patch27: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-icons.patch
+#Patch29: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslprotdefault.patch
 Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-cachehardmax.patch
-#Patch31: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslmultiproxy.patch
 Patch34: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-socket-activation.patch
 Patch38: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslciphdefault.patch
-#Patch39: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslprotdefault.patch
-#Patch40: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861269.patch
-Patch41: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-r1861793+.patch
-#Patch42: httpd-2.4.43-r1828172+.patch
+
 # Bug fixes
-# Patch50: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.25-fallbackresource.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=1397243
-# Patch58: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.34-r1738878.patch
-#Patch60: httpd-2.4.34-enable-sslv3.patch
-#Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.41-r1865749.patch
+Patch61: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.59-r1916863.patch
 
 # Security fixes
 
@@ -99,6 +92,8 @@ Obsoletes: httpd-suexec
 Provides: webserver
 Provides: mod_dav = %{version}-%{release}, httpd-suexec = %{version}-%{release}
 Provides: httpd-mmn = %{mmn}, httpd-mmn = %{mmnisa}
+Provides: mod_proxy_uwsgi = %{version}-%{release}
+Requires: /etc/mime.types
 Requires: httpd-tools = %{version}-%{release}
 Requires: httpd-filesystem = %{version}-%{release}
 Requires: mod_http2
@@ -107,7 +102,6 @@ Requires(preun): systemd-units
 Requires(postun): systemd-units
 Requires(post): systemd-units
 Conflicts: apr < 1.5.0-1
-Provides: mod_proxy_uwsgi = %{version}-%{release}
 Obsoletes: mod_proxy_uwsgi < 2.0.17.1-2
 
 %description
