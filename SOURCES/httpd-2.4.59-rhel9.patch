@@ -1,0 +1,13 @@
+diff --git a/buildconf b/buildconf
+index 4b3596951c..de01d0c03a 100755
+--- a/buildconf
++++ b/buildconf
+@@ -262,7 +262,7 @@ if [ -n "${apr_config}" ]; then
+     cp "${am_libdir}/config.guess" "${am_libdir}/config.sub" build
+ 
+     # Remember that in this case, $apr_src_dir points to the build directory.
+-    cp "$apr_src_dir/apr_common.m4" "$apr_src_dir/find_apr.m4" build
++    cp "/usr/share/aclocal/apr_common.m4" "/usr/share/aclocal/find_apr.m4" build
+     if [ $apr_major_version -lt 2 ] ; then
+         cp "$apr_src_dir/find_apu.m4" build
+     fi
