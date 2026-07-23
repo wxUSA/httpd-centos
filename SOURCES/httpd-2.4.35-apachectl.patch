@@ -10,7 +10,7 @@ index 870a048..32d3ee5 100644
 +Displays a brief status report using systemd\&.
  .TP
  \fBgraceful\fR
- Gracefully restarts the Apache httpd daemon\&. If the daemon is not running, it is started\&. This differs from a normal restart in that currently open connections are not aborted\&. A side effect is that old log files will not be closed immediately\&. This means that if used in a log rotation script, a substantial delay may be necessary to ensure that the old log files are closed before processing them\&. This command automatically checks the configuration files as in \fBconfigtest\fR before initiating the restart to make sure Apache doesn't die\&. This is equivalent to \fBapachectl -k graceful\fR\&.  
+ Gracefully restarts the Apache \fBhttpd\fR daemon\&. If the daemon is not running, it is started\&. This differs from a normal restart in that currently open connections are not aborted\&. A side effect is that old log files will not be closed immediately\&. This means that if used in a log rotation script, a substantial delay may be necessary to ensure that the old log files are closed before processing them\&. This command automatically checks the configuration files as in \fBconfigtest\fR before initiating the restart to make sure Apache doesn't die\&. This is equivalent to \fBapachectl -k graceful\fR\&.  
 diff --git a/support/apachectl.in b/support/apachectl.in
 index 3281c2e..8ce6f2b 100644
 --- a/support/apachectl.in

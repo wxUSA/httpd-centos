@@ -5,7 +5,7 @@
 %define suexec_caller apache
 %define mmn 20120211
 %define mmnisa %{mmn}%{__isa_name}%{__isa_bits}
-%define vstring %(source /etc/os-release; echo ${NAME})
+%define vstring %(source /etc/os-release; echo ${REDHAT_SUPPORT_PRODUCT})
 %if 0%{?fedora} > 26 || 0%{?rhel} > 7
 %global mpm event
 %else
@@ -13,12 +13,11 @@
 %endif
 
 Summary: Apache HTTP Server
-Name: {{{ git_name name=httpd }}}
+Name: httpd
 Version: 2.4.68
 Release: 1%{?dist}
 URL: https://httpd.apache.org/
-VCS: {{{ git_dir_vcs }}}
-Source0: {{{ git_dir_pack }}}
+Source0: https://github.com/wxUSA/%{gitrepo}/archive/%{gitbranch}.tar.gz#/%{name}-%{version}.tar.gz
 #Source1: index.html
 #Source2: httpd.logrotate
 #Source3: instance.conf
@@ -67,9 +66,7 @@ Patch22: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/http
 Patch23: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.53-export.patch
 Patch24: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-corelimit.patch
 Patch25: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-icons.patch
-#Patch26: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-gettid.patch
 Patch28: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslciphdefault.patch
-#Patch29: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-sslprotdefault.patch
 Patch30: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-cachehardmax.patch
 Patch32: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.43-logjournal.patch
 Patch33: https://raw.githubusercontent.com/wxUSA/httpd-centos/2.4.x/SOURCES/httpd-2.4.64-separate-systemd-fns.patch
@@ -207,7 +204,7 @@ The mod_session module and associated backends provide an abstract
 interface for storing and accessing per-user session data.
 
 %prep
-{{{ git_dir_setup_macro }}}
+%setup -q
 
 %patch -P1 -p1 -b .apctl
 %patch -P2 -p1 -b .apxs
@@ -219,13 +216,11 @@ interface for storing and accessing per-user session data.
 %patch -P22 -p1 -b .mod_systemd
 %patch -P23 -p1 -b .export
 %patch -P24 -p1 -b .corelimit
-#%patch -P26 -p1 -b .gettid
 %patch -P25 -p1 -b .icons
 %patch -P28 -p1 -b .sslciphdefault
 %patch -P30 -p1 -b .cachehardmax
 %patch -P32 -p1 -b .logjournal
 %patch -P33 -p1 -b .separate-systemd-fns
-#%patch -P39 -p1 -b .sslprotdefault
 
 %if 0%{?rhel} >= 9
 %patch -P71 -p1 -b .rhel9
