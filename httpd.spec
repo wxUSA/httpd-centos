@@ -377,7 +377,7 @@ install -m 644 SOURCES/README.confmod \
 for f in 00-base.conf 00-mpm.conf 00-lua.conf 01-cgi.conf 00-dav.conf \
          00-proxy.conf 00-ssl.conf 01-ldap.conf 00-proxyhtml.conf \
          01-ldap.conf 00-systemd.conf 01-session.conf 00-optional.conf \
-         00-http2.conf; do
+         01-http2.conf; do
   install -m 644 -p SOURCES/$f \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/$f
 done
@@ -646,7 +646,7 @@ exit $rv
 %exclude %{_sysconfdir}/httpd/conf.modules.d/00-proxyhtml.conf
 %exclude %{_sysconfdir}/httpd/conf.modules.d/01-ldap.conf
 %exclude %{_sysconfdir}/httpd/conf.modules.d/01-session.conf
-%exclude %{_sysconfdir}/httpd/conf.modules.d/00-http2.conf
+%exclude %{_sysconfdir}/httpd/conf.modules.d/01-http2.conf
 
 %config(noreplace) %{_sysconfdir}/sysconfig/htcacheclean
 %{_prefix}/lib/tmpfiles.d/httpd.conf
@@ -750,7 +750,7 @@ exit $rv
 %files -n mod_http2
 %{_libdir}/httpd/modules/mod_http2.so
 %{_libdir}/httpd/modules/mod_proxy_http2.so
-%config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/00-http2.conf
+%config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-http2.conf
 
 %files devel
 %{_includedir}/httpd
