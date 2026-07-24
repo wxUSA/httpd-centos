@@ -60,6 +60,7 @@ if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
     git checkout "${BRANCH}"
 
     sed -i "s/^Release: .*/Release: ${RELEASE}%{?dist}/" httpd.spec
+    "${REPO_ROOT}/rpm/add-changelog.sh" httpd.spec "${VERSION}" "${RELEASE}" "rebuild"
     "${REPO_ROOT}/rpm/gen-rpmlocal.sh"
 
     if [[ "$SKIP_VALIDATE" -eq 1 ]]; then
@@ -110,6 +111,7 @@ else
 
     sed -i "s/^Version: .*/Version: ${VERSION}/" httpd.spec
     sed -i "s/^Release: .*/Release: ${RELEASE}%{?dist}/" httpd.spec
+    "${REPO_ROOT}/rpm/add-changelog.sh" httpd.spec "${VERSION}" "${RELEASE}" "new version ${VERSION}"
     "${REPO_ROOT}/rpm/gen-rpmlocal.sh"
 
     if [[ "$SKIP_VALIDATE" -eq 1 ]]; then

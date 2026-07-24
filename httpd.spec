@@ -206,6 +206,26 @@ Requires: httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
 The mod_session module and associated backends provide an abstract
 interface for storing and accessing per-user session data.
 
+%package -n mod_http2
+Group: System Environment/Daemons
+Summary: HTTP/2 module for the Apache HTTP Server
+Epoch: 1
+BuildRequires: libnghttp2-devel
+Requires: httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+# Same package name as the historically separate mod_http2 SRPM
+# (EPEL7, RHEL8 module stream). mod_http2 now lives in the httpd source
+# tree itself (github.com/icing/mod_http2 is archived upstream) and is
+# built from it here instead of relying on the OS-provided package.
+# Epoch always outranks any externally-versioned same-named package,
+# regardless of its version numbering scheme, so this one wins cleanly
+# if both repos are enabled.
+Obsoletes: mod_http2 < 1:0
+
+%description -n mod_http2
+The mod_http2 and mod_proxy_http2 modules add HTTP/2 support to the
+Apache HTTP Server, built from the same source tree and patch set as
+httpd itself rather than a separately versioned package.
+
 %prep
 {{{ git_dir_setup_macro }}}
 
@@ -227,7 +247,7 @@ interface for storing and accessing per-user session data.
 %patch -P33 -p1 -b .separate-systemd-fns
 #%patch -P39 -p1 -b .sslprotdefault
 
-%if 0%{?rhel} >= 9
+%if 0%{?rhel} >= 9 || 0%{?fedora}
 %patch -P71 -p1 -b .rhel9
 %endif
 
@@ -329,7 +349,7 @@ export LYNX_PATH=/usr/bin/links
         --enable-authn-anon --enable-authn-alias \
         --enable-systemd \
         --disable-imagemap --disable-file-cache \
-        --disable-http2 \
+        --enable-proxy-http2 \
         --disable-md \
         $*
 make %{?_smp_mflags}
@@ -356,7 +376,8 @@ install -m 644 SOURCES/README.confmod \
     $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/README
 for f in 00-base.conf 00-mpm.conf 00-lua.conf 01-cgi.conf 00-dav.conf \
          00-proxy.conf 00-ssl.conf 01-ldap.conf 00-proxyhtml.conf \
-         01-ldap.conf 00-systemd.conf 01-session.conf 00-optional.conf; do
+         01-ldap.conf 00-systemd.conf 01-session.conf 00-optional.conf \
+         00-http2.conf; do
   install -m 644 -p SOURCES/$f \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/$f
 done
@@ -625,6 +646,7 @@ exit $rv
 %exclude %{_sysconfdir}/httpd/conf.modules.d/00-proxyhtml.conf
 %exclude %{_sysconfdir}/httpd/conf.modules.d/01-ldap.conf
 %exclude %{_sysconfdir}/httpd/conf.modules.d/01-session.conf
+%exclude %{_sysconfdir}/httpd/conf.modules.d/00-http2.conf
 
 %config(noreplace) %{_sysconfdir}/sysconfig/htcacheclean
 %{_prefix}/lib/tmpfiles.d/httpd.conf
@@ -647,6 +669,8 @@ exit $rv
 %exclude %{_libdir}/httpd/modules/mod_proxy_html.so
 %exclude %{_libdir}/httpd/modules/mod_xml2enc.so
 %exclude %{_libdir}/httpd/modules/mod_session*.so
+%exclude %{_libdir}/httpd/modules/mod_http2.so
+%exclude %{_libdir}/httpd/modules/mod_proxy_http2.so
 
 %dir %{contentdir}/error
 %dir %{contentdir}/error/include
@@ -723,6 +747,11 @@ exit $rv
 %{_libdir}/httpd/modules/mod_auth_form.so
 %config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-session.conf
 
+%files -n mod_http2
+%{_libdir}/httpd/modules/mod_http2.so
+%{_libdir}/httpd/modules/mod_proxy_http2.so
+%config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/00-http2.conf
+
 %files devel
 %{_includedir}/httpd
 %{_bindir}/apxs
@@ -733,6 +762,9 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Thu Jul 23 2026 Wesley Haines <wes@weshaines.com> - 2.4.68-1
+- new version 2.4.68
+
 * Sun Dec 27 2020 Wesley Haines <wes@weatherusa.net> - 2.4.46-1-el7
 - Rebuilt for RHEL/CentOS 7
 
