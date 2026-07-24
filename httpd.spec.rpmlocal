@@ -758,6 +758,9 @@ exit $rv
 
 %changelog
 * Thu Jul 23 2026 Wesley Haines <wes@weshaines.com> - 2.4.68-1
+- rebuild
+
+* Thu Jul 23 2026 Wesley Haines <wes@weshaines.com> - 2.4.68-1
 - new version 2.4.68
 
 * Sun Dec 27 2020 Wesley Haines <wes@weatherusa.net> - 2.4.46-1-el7
