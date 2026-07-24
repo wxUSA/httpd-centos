@@ -15,7 +15,7 @@
 Summary: Apache HTTP Server
 Name: {{{ git_name name=httpd }}}
 Version: 2.4.68
-Release: 2%{?dist}
+Release: 3%{?dist}
 URL: https://httpd.apache.org/
 VCS: {{{ git_dir_vcs }}}
 Source0: {{{ git_dir_pack }}}
@@ -762,6 +762,9 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Thu Jul 23 2026 Wesley Haines <wes@weshaines.com> - 2.4.68-3
+- rebuild
+
 * Thu Jul 23 2026 Wesley Haines <wes@weshaines.com> - 2.4.68-2
 - rebuild
 
